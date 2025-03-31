@@ -27,7 +27,11 @@ import {
   InsertCodeBlock,
   ConditionalContents,
   ChangeCodeMirrorLanguage,
-  CodeMirrorEditor
+  CodeMirrorEditor,
+  diffSourcePlugin,
+  linkDialogPlugin,
+  AdmonitionDirectiveDescriptor,
+  InsertAdmonition
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
 import '../styles/editor.css';
@@ -39,7 +43,6 @@ interface MarkdownEditorProps {
 
 export default function MarkdownEditor({ initialContent, onChange }: MarkdownEditorProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const [isRawMode, setIsRawMode] = useState(false);
   const [content, setContent] = useState(initialContent);
 
   useEffect(() => {
@@ -63,115 +66,112 @@ export default function MarkdownEditor({ initialContent, onChange }: MarkdownEdi
 
   return (
     <div className="editor-container">
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b">
-        <h2 className="text-sm font-medium text-gray-700">Editor Mode</h2>
-        <button
-          onClick={() => setIsRawMode(!isRawMode)}
-          className="px-3 py-1 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          {isRawMode ? 'Rich Text' : 'Raw Markdown'}
-        </button>
+      <div className="px-4 py-2 bg-gray-50 border-b">
+        <h2 className="text-sm font-medium text-gray-700">Markdown Editor</h2>
       </div>
 
       <div className="flex-1 min-h-0 relative">
-        {isRawMode ? (
-          <textarea
-            value={content}
-            onChange={(e) => handleChange(e.target.value)}
-            className="raw-markdown"
-            spellCheck="false"
-            placeholder="Start writing your markdown content here..."
-          />
-        ) : (
-          <MDXEditor
-            markdown={content}
-            onChange={handleChange}
-            plugins={[
-              headingsPlugin(),
-              listsPlugin({
-                checkboxClassName: 'mdx-checkbox',
-                enableTaskList: true,
-                styleList: true
-              }),
-              quotePlugin(),
-              thematicBreakPlugin(),
-              markdownShortcutPlugin(),
-              tablePlugin(),
-              imagePlugin(),
-              codeMirrorPlugin({
-                codeBlockLanguages: {
-                  js: 'JavaScript',
-                  javascript: 'JavaScript',
-                  ts: 'TypeScript',
-                  typescript: 'TypeScript',
-                  jsx: 'JSX',
-                  tsx: 'TSX',
-                  css: 'CSS',
-                  html: 'HTML',
-                  json: 'JSON',
-                  md: 'Markdown',
-                  python: 'Python',
-                  py: 'Python',
-                  bash: 'Bash',
-                  sh: 'Shell',
-                  php: 'PHP',
-                  go: 'Go',
-                  rust: 'Rust',
-                  ruby: 'Ruby',
-                  java: 'Java',
-                  c: 'C',
-                  cpp: 'C++',
-                  csharp: 'C#',
-                  xml: 'XML',
-                  yaml: 'YAML',
-                  sql: 'SQL'
+        <MDXEditor
+          markdown={content}
+          onChange={handleChange}
+          plugins={[
+            headingsPlugin(),
+            listsPlugin({
+              checkboxClassName: 'mdx-checkbox',
+              enableTaskList: true,
+              styleList: true
+            }),
+            quotePlugin(),
+            thematicBreakPlugin(),
+            markdownShortcutPlugin(),
+            tablePlugin(),
+            imagePlugin(),
+            linkDialogPlugin(),
+            diffSourcePlugin({
+              viewMode: 'rich-text',
+              diffMarkdown: content
+            }),
+            directivesPlugin({
+              directiveDescriptors: [
+                AdmonitionDirectiveDescriptor
+              ]
+            }),
+            codeMirrorPlugin({
+              codeBlockLanguages: {
+                js: 'JavaScript',
+                javascript: 'JavaScript',
+                ts: 'TypeScript',
+                typescript: 'TypeScript',
+                jsx: 'JSX',
+                tsx: 'TSX',
+                css: 'CSS',
+                html: 'HTML',
+                json: 'JSON',
+                md: 'Markdown',
+                python: 'Python',
+                py: 'Python',
+                bash: 'Bash',
+                sh: 'Shell',
+                php: 'PHP',
+                go: 'Go',
+                rust: 'Rust',
+                ruby: 'Ruby',
+                java: 'Java',
+                c: 'C',
+                cpp: 'C++',
+                csharp: 'C#',
+                xml: 'XML',
+                yaml: 'YAML',
+                sql: 'SQL',
+                tex: 'LaTeX',
+                math: 'Math'
+              }
+            }),
+            codeBlockPlugin({
+              defaultCodeBlockLanguage: 'js',
+              codeBlockEditorDescriptors: [
+                { 
+                  match: () => true,
+                  priority: 1,
+                  Editor: CodeMirrorEditor
                 }
-              }),
-              codeBlockPlugin({
-                defaultCodeBlockLanguage: 'js',
-                codeBlockEditorDescriptors: [
-                  { 
-                    match: () => true,
-                    priority: 1,
-                    Editor: CodeMirrorEditor
-                  }
-                ]
-              }),
-              directivesPlugin(),
-              linkPlugin(),
-              toolbarPlugin({
-                toolbarContents: () => (
-                  <>
-                    <UndoRedo />
-                    <BoldItalicUnderlineToggles />
-                    <BlockTypeSelect />
-                    <CreateLink />
-                    <InsertImage />
-                    <InsertTable />
-                    <InsertThematicBreak />
-                    <ListsToggle />
-                    <CodeToggle />
-                    <InsertCodeBlock />
-                    <ConditionalContents
-                      options={[
-                        {
-                          when: editor => editor?.editorType === 'codeblock',
-                          contents: () => <ChangeCodeMirrorLanguage />
-                        }
-                      ]}
-                    />
-                  </>
-                )
-              })
-            ]}
-            contentEditableClassName="prose max-w-none h-full min-h-[600px]"
-            className="h-full relative mdx-editor-container"
-          />
-        )}
+              ]
+            }),
+            linkPlugin(),
+            toolbarPlugin({
+              toolbarContents: () => (
+                <>
+                  <UndoRedo />
+                  <BoldItalicUnderlineToggles />
+                  <BlockTypeSelect />
+                  <CreateLink />
+                  <InsertImage />
+                  <InsertTable />
+                  <InsertThematicBreak />
+                  <ListsToggle />
+                  <CodeToggle />
+                  <InsertCodeBlock />
+                  <InsertAdmonition />
+                  <ConditionalContents
+                    options={[
+                      {
+                        when: editor => editor?.editorType === 'codeblock',
+                        contents: () => <ChangeCodeMirrorLanguage />
+                      }
+                    ]}
+                  />
+                </>
+              )
+            })
+          ]}
+          contentEditableClassName="prose max-w-none h-full min-h-[600px]"
+          className="h-full relative mdx-editor-container"
+          spellCheck={false}
+        />
       </div>
       
-      <div className="fixed bottom-4 right-4 bg-blue-100 text-blue-800 p-2 rounded shadow text-sm z-10">
-        Tip: Use ```javascript (or any language name) to create syntax-highlighted code blocks
+      <div className="fixed bottom-4 right-4 bg-blue-100 text-blue-800 p-3 rounded shadow text-sm z-10">
+        <p>Use ```javascript to create syntax-highlighted code blocks</p>
       </div>
     </div>
   );
