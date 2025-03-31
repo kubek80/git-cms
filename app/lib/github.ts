@@ -12,6 +12,7 @@ interface GitHubContent {
   name: string;
   path: string;
   type: "file" | "dir";
+  download_url: string | null;
 }
 
 interface GitHubBranch {
@@ -98,6 +99,7 @@ export async function getRepositoryContent(
     name: item.name,
     type: item.type === "dir" ? "folder" : "file",
     path: item.path,
+    download_url: item.download_url,
   }));
 }
 
@@ -201,7 +203,12 @@ export async function createPullRequest(
   const sha = branchData.object.sha;
 
   // Create new branch
-  const newBranchName = `update-${Date.now()}`;
+  const timestamp = Date.now();
+  const newBranchName = `create-${path.replace(
+    /[^a-zA-Z0-9]/g,
+    "-"
+  )}-${timestamp}`;
+
   const createBranchResponse = await fetch(
     `https://api.github.com/repos/${repoFullName}/git/refs`,
     {
@@ -222,24 +229,7 @@ export async function createPullRequest(
     throw new Error("Failed to create new branch");
   }
 
-  // Get the current file's SHA if it exists
-  const fileResponse = await fetch(
-    `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}?ref=${branch}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github.v3+json",
-      },
-    }
-  );
-
-  let fileSha;
-  if (fileResponse.ok) {
-    const fileData = await fileResponse.json();
-    fileSha = fileData.sha;
-  }
-
-  // Update file in new branch
+  // Create or update file in new branch
   const updateResponse = await fetch(
     `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}`,
     {
@@ -250,17 +240,16 @@ export async function createPullRequest(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        message: `Update ${path}`,
+        message: `Create ${path}`,
         content: btoa(unescape(encodeURIComponent(content))),
         branch: newBranchName,
-        ...(fileSha && { sha: fileSha }),
       }),
     }
   );
 
   if (!updateResponse.ok) {
     const errorData = await updateResponse.json();
-    throw new Error(`Failed to update file: ${errorData.message}`);
+    throw new Error(`Failed to create file: ${errorData.message}`);
   }
 
   // Create pull request
@@ -274,10 +263,10 @@ export async function createPullRequest(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        title: `Update ${path}`,
+        title: `Create ${path}`,
         head: newBranchName,
         base: branch,
-        body: "Updated content via CMS",
+        body: "Created new file via CMS",
       }),
     }
   );
@@ -386,4 +375,42 @@ export async function getFilePullRequests(
   );
 
   return filePRs.filter((pr): pr is PullRequest => pr !== null);
+}
+
+export async function createFile(
+  repoFullName: string,
+  path: string,
+  content: string
+): Promise<void> {
+  const token = localStorage.getItem("github_token");
+  if (!token) {
+    throw new Error("GitHub token not found");
+  }
+
+  const encodedPath = path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  const response = await fetch(
+    `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `Create ${path}`,
+        content: btoa(unescape(encodeURIComponent(content))),
+        branch: "main", // Always create in main branch
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Failed to create file: ${errorData.message}`);
+  }
 }
