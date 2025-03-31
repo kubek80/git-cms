@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Layout from '@/app/components/Layout';
+import Breadcrumbs from '@/app/components/Breadcrumbs';
 import RepositoryContent from '@/app/components/RepositoryContent';
 import { getRepositoryContent, getFileBranches } from '@/app/lib/github';
 import type { FileItem } from '@/app/components/RepositoryContent';
 
 export default function RepositoryPage() {
   const params = useParams();
-  const repositoryId = params.id as string;
+  const repositoryId = decodeURIComponent(params.id as string);
   
   const [files, setFiles] = useState<FileItem[]>([]);
   const [branches, setBranches] = useState<string[]>([]);
@@ -22,7 +23,7 @@ export default function RepositoryPage() {
       try {
         const [branchesData, filesData] = await Promise.all([
           getFileBranches(repositoryId),
-          getRepositoryContent(repositoryId, 'content', currentBranch),
+          getRepositoryContent(repositoryId, "(content)", currentBranch),
         ]);
 
         setBranches(branchesData);
@@ -42,9 +43,15 @@ export default function RepositoryPage() {
     setCurrentBranch(branch);
   };
 
+  const breadcrumbItems = [
+    { label: 'Repositories', href: '/' },
+    { label: repositoryId }
+  ];
+
   return (
     <Layout>
       <div className="space-y-6">
+        <Breadcrumbs items={breadcrumbItems} />
         <h1 className="text-2xl font-bold">Repository: {repositoryId}</h1>
 
         {loading && (

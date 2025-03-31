@@ -30,8 +30,8 @@ export default function FileEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold break-all">{filePath}</h2>
+      <div className="flex justify-between items-center bg-white p-4 rounded-lg border border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-900 break-all">{filePath}</h2>
         <button
           onClick={handleSave}
           disabled={isSaving}
@@ -43,7 +43,7 @@ export default function FileEditor({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="w-full h-[600px] font-mono p-4 border rounded resize-none"
+        className="w-full h-[600px] font-mono p-4 border border-gray-200 rounded bg-white text-gray-900 focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-all"
       />
     </div>
   );
