@@ -13,6 +13,7 @@ interface GitHubContent {
   path: string;
   type: "file" | "dir";
   download_url: string | null;
+  sha?: string;
 }
 
 interface GitHubBranch {
@@ -36,6 +37,22 @@ interface PullRequest {
   };
   mergeable?: boolean;
   mergeable_state?: string;
+}
+
+// Helper function to properly encode GitHub paths
+function encodeGitHubPath(path: string): string {
+  // Normalize path to use forward slashes
+  const normalizedPath = path.replace(/\\/g, "/");
+
+  return normalizedPath
+    .split("/")
+    .map((segment) => {
+      if (segment === "(content)") {
+        return "%28content%29";
+      }
+      return encodeURIComponent(segment);
+    })
+    .join("/");
 }
 
 export async function getRepositories(): Promise<Repository[]> {
@@ -73,10 +90,7 @@ export async function getRepositoryContent(
     throw new Error("GitHub token not found");
   }
 
-  const encodedPath = path
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
+  const encodedPath = encodeGitHubPath(path);
 
   const response = await fetch(
     `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}?ref=${branch}`,
@@ -137,10 +151,7 @@ export async function getFileContent(
     throw new Error("GitHub token not found");
   }
 
-  const encodedPath = path
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
+  const encodedPath = encodeGitHubPath(path);
 
   const response = await fetch(
     `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}?ref=${branch}`,
@@ -387,10 +398,7 @@ export async function createFile(
     throw new Error("GitHub token not found");
   }
 
-  const encodedPath = path
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
+  const encodedPath = encodeGitHubPath(path);
 
   const response = await fetch(
     `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}`,
@@ -412,5 +420,74 @@ export async function createFile(
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(`Failed to create file: ${errorData.message}`);
+  }
+}
+
+export async function getFileSHA(
+  repoFullName: string,
+  path: string,
+  branch: string = "main"
+): Promise<string> {
+  const token = localStorage.getItem("github_token");
+  if (!token) {
+    throw new Error("GitHub token not found");
+  }
+
+  const encodedPath = encodeGitHubPath(path);
+
+  const response = await fetch(
+    `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}?ref=${branch}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to get file SHA: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+  return data.sha;
+}
+
+export async function updateFile(
+  repoFullName: string,
+  path: string,
+  content: string,
+  sha: string
+): Promise<void> {
+  const token = localStorage.getItem("github_token");
+  if (!token) {
+    throw new Error("GitHub token not found");
+  }
+
+  const encodedPath = encodeGitHubPath(path);
+
+  const response = await fetch(
+    `https://api.github.com/repos/${repoFullName}/contents/${encodedPath}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `Update ${path}`,
+        content: btoa(unescape(encodeURIComponent(content))),
+        sha: sha,
+        branch: "main",
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Failed to update file: ${errorData.message}`);
   }
 }

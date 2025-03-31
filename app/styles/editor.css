@@ -1,0 +1,327 @@
+/* Editor container styles */
+.mdx-editor-container {
+  --editor-toolbar-color: #4b5563;
+  --editor-toolbar-bg: #f9fafb;
+  border: none !important;
+  background: white;
+}
+
+.mdx-editor-container .toolbar {
+  background: var(--editor-toolbar-bg);
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mdx-editor-container .toolbar button {
+  color: var(--editor-toolbar-color);
+}
+
+.mdx-editor-container .toolbar button:hover {
+  background: #f3f4f6;
+}
+
+.mdx-editor-container .toolbar select {
+  color: var(--editor-toolbar-color);
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+/* Content area styles */
+.mdx-editor-container [contenteditable] {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #1f2937;
+}
+
+/* Headings */
+.mdx-editor-container [contenteditable] h1 {
+  font-size: 2em;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.25em;
+}
+
+.mdx-editor-container [contenteditable] h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.mdx-editor-container [contenteditable] h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+/* Paragraphs and spacing */
+.mdx-editor-container [contenteditable] p {
+  margin: 1em 0;
+}
+
+/* Lists */
+.mdx-editor-container [contenteditable] ul {
+  list-style-type: disc;
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.mdx-editor-container [contenteditable] ol {
+  list-style-type: decimal;
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.mdx-editor-container [contenteditable] li {
+  margin: 0.5em 0;
+  display: list-item;
+  position: relative;
+}
+
+/* Task Lists */
+.mdx-editor-container [contenteditable] li[data-task] {
+  list-style-type: none;
+  padding-left: 1.5em;
+  position: relative;
+}
+
+.mdx-editor-container [contenteditable] li[data-task]::before {
+  content: '';
+  position: absolute;
+  left: -0.5em;
+  top: 0.3em;
+  width: 1.25em;
+  height: 1.25em;
+  border: 2px solid #9ca3af;
+  border-radius: 0.25em;
+  background: white;
+}
+
+.mdx-editor-container [contenteditable] li[data-task="true"]::before {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-size: 1em 1em;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.mdx-editor-container [contenteditable] li[data-task] p {
+  margin: 0;
+}
+
+.mdx-editor-container [contenteditable] li > ul,
+.mdx-editor-container [contenteditable] li > ol {
+  margin: 0.5em 0;
+}
+
+/* Blockquotes */
+.mdx-editor-container [contenteditable] blockquote {
+  border-left: 4px solid #e5e7eb;
+  margin: 1em 0;
+  padding-left: 1em;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Links */
+.mdx-editor-container [contenteditable] a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.mdx-editor-container [contenteditable] a:hover {
+  color: #1d4ed8;
+}
+
+/* Code blocks */
+.mdx-editor-container [contenteditable] pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 1em 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mdx-editor-container [contenteditable] .codeblock {
+  margin: 1.5em 0;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mdx-editor-container [contenteditable] .codeblock-language-select {
+  background: #252525;
+  color: #d4d4d4;
+  border: none;
+  border-bottom: 1px solid #333;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  padding: 6px 10px;
+  width: auto;
+  min-width: 120px;
+  border-radius: 0;
+}
+
+.mdx-editor-container [contenteditable] .codeblock-language-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* Syntax highlighting */
+.cm-line .cm-keyword {
+  color: #569cd6;
+}
+
+.cm-line .cm-operator {
+  color: #d4d4d4;
+}
+
+.cm-line .cm-variable {
+  color: #9cdcfe;
+}
+
+.cm-line .cm-property {
+  color: #9cdcfe;
+}
+
+.cm-line .cm-string {
+  color: #ce9178;
+}
+
+.cm-line .cm-number {
+  color: #b5cea8;
+}
+
+.cm-line .cm-comment {
+  color: #6a9955;
+}
+
+.cm-line .cm-def {
+  color: #dcdcaa;
+}
+
+.cm-line .cm-punctuation {
+  color: #d4d4d4;
+}
+
+.cm-line .cm-atom {
+  color: #569cd6;
+}
+
+.cm-line .cm-meta {
+  color: #9cdcfe;
+}
+
+/* Command for inserting code block */
+.kitchen-sink-toolbar button[aria-label="Insert Code Block"] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+}
+
+.kitchen-sink-toolbar button[aria-label="Insert Code Block"]::before {
+  content: "</>";
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Inline code */
+.mdx-editor-container [contenteditable] code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  background: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  color: #e53e3e;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mdx-editor-container [contenteditable] pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  border: none;
+}
+
+/* Tables */
+.mdx-editor-container [contenteditable] table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.mdx-editor-container [contenteditable] th,
+.mdx-editor-container [contenteditable] td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+}
+
+.mdx-editor-container [contenteditable] th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+/* Images */
+.mdx-editor-container [contenteditable] img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+/* Horizontal rule */
+.mdx-editor-container [contenteditable] hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 2em 0;
+}
+
+/* Focus state */
+.mdx-editor-container [contenteditable]:focus {
+  outline: none;
+}
+
+/* Raw markdown mode */
+textarea.raw-markdown {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #1f2937;
+  background: white;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  padding: 2rem;
+  border: none;
+  resize: none;
+}
+
+textarea.raw-markdown:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Ensure consistent height */
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 600px;
+  background: white;
+}
+
+/* Code mirror specific styling */
+.cm-editor {
+  height: 100%;
+} 

@@ -35,7 +35,7 @@ export default function RepositoryContent({
     
     // Remove any extension the user might have added
     const baseName = newFileName.replace(/\.(md|cmsjs)$/, '');
-    const fullFileName = `${baseName}.${fileType}`;
+    const fullFileName = `(content)/${baseName}.${fileType}`;
 
     setIsCreating(true);
     setError(null);

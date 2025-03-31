@@ -6,7 +6,14 @@ import Layout from '@/app/components/Layout';
 import Breadcrumbs from '@/app/components/Breadcrumbs';
 import FileEditor from '@/app/components/FileEditor';
 import PullRequestList from '@/app/components/PullRequestList';
-import { getFileContent, createPullRequest, getFilePullRequests, mergePullRequest } from '@/app/lib/github';
+import { 
+  getFileContent, 
+//   createPullRequest, 
+  getFilePullRequests, 
+  mergePullRequest,
+  getFileSHA,
+  updateFile
+} from '@/app/lib/github';
 
 interface PullRequest {
   number: number;
@@ -60,10 +67,14 @@ export default function FilePage() {
 
   const handleSave = async (newContent: string) => {
     try {
-      await createPullRequest(repositoryId, path, newContent);
-      alert('Changes saved and pull request created!');
-      // Refresh the page to show the new PR
-      window.location.reload();
+      // Get the current file's SHA
+      const sha = await getFileSHA(repositoryId, path);
+      
+      // Update the file with the new content
+      await updateFile(repositoryId, path, newContent, sha);
+      
+      // Show success message
+      alert('Changes saved successfully!');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save changes');
     }
