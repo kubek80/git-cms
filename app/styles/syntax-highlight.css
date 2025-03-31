@@ -1,0 +1,71 @@
+/* Custom syntax highlighting styles */
+
+/* Fix line number width and spacing */
+.syntax-highlighter:where(.linenumber) {
+  border-right: 1px solid rgba(128, 128, 128, 0.2) !important;
+}
+
+/* Improve spacing on line numbers */
+.syntax-highlighter span.linenumber {
+  padding: 0 16px !important;
+  min-width: 2.5em !important;
+  text-align: right !important;
+}
+
+/* Custom token styling - light theme */
+.syntax-highlighter .token.comment {
+  font-style: italic;
+}
+
+.syntax-highlighter .token.string {
+  color: #a31515 !important;
+}
+
+.syntax-highlighter .token.property,
+.syntax-highlighter .token.constant {
+  color: #0070c1 !important;
+}
+
+.syntax-highlighter .token.keyword {
+  color: #0000ff !important;
+}
+
+/* Dark theme specific overrides */
+.syntax-highlighter.dark .token.string {
+  color: #ce9178 !important;
+}
+
+.syntax-highlighter.dark .token.property,
+.syntax-highlighter.dark .token.constant {
+  color: #9cdcfe !important;
+}
+
+.syntax-highlighter.dark .token.keyword {
+  color: #569cd6 !important;
+}
+
+.syntax-highlighter.dark .token.comment {
+  color: #6a9955 !important;
+  font-style: italic;
+}
+
+/* Animation for the copied message */
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.copied-notification {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  animation: fadeInOut 1.5s ease-in-out;
+  z-index: 100;
+} 

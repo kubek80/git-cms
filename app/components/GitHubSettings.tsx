@@ -24,7 +24,7 @@ export default function GitHubSettings() {
   return (
     <div className="max-w-3xl space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold">GitHub Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-800">GitHub Settings</h1>
         <p className="text-gray-600">
           Configure your GitHub access to enable repository management and content editing.
         </p>

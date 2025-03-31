@@ -1,0 +1,23 @@
+export default {
+  // Content section - contains the HTML content from the editor
+  content: "<h1>Welcome to GitCMS</h1><p>This is an example of content created with the GitCMS editor. You can create rich content with formatting, headings, lists, and more.</p><p>The editor supports:</p><ul><li>Headings</li><li>Bold and <strong>italic</strong> text</li><li>Lists (ordered and unordered)</li><li>Links</li><li>Images</li><li>Code blocks</li></ul><p>This content is stored as HTML and can be easily rendered in your front-end application.</p>",
+  
+  // Metadata section - contains SEO related information
+  metadata: {
+    "title": "GitCMS Example Page",
+    "description": "An example page created with GitCMS to demonstrate the format and capabilities.",
+    "keywords": "gitcms, tiptap, content management, javascript, react",
+    "canonicalUrl": "https://example.com/gitcms-example"
+  },
+  
+  // Social section - contains social sharing information
+  social: {
+    "ogTitle": "GitCMS - Modern Content Management",
+    "ogDescription": "Check out this example page created with GitCMS, a modern content management system for Git-based projects.",
+    "ogImage": "https://example.com/images/gitcms-social.jpg",
+    "twitterTitle": "GitCMS Example on Twitter",
+    "twitterDescription": "Modern content management for developers. GitCMS makes content creation easy and version-controlled.",
+    "twitterImage": "https://example.com/images/gitcms-twitter.jpg",
+    "twitterCardType": "summary_large_image"
+  }
+}; 

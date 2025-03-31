@@ -1,0 +1,108 @@
+/* Tiptap editor styles */
+.ProseMirror {
+  min-height: 300px;
+  padding: 1rem;
+  overflow-y: auto;
+  color: #374151; /* text-gray-700 equivalent */
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror p {
+  margin-bottom: 1em;
+  color: #374151; /* text-gray-700 equivalent */
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+  color: #1F2937; /* text-gray-800 equivalent */
+}
+
+.ProseMirror h1 {
+  font-size: 2em;
+  font-weight: 700;
+}
+
+.ProseMirror h2 {
+  font-size: 1.75em;
+  font-weight: 600;
+}
+
+.ProseMirror h3 {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+  color: #374151; /* text-gray-700 equivalent */
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.5em;
+  color: #374151; /* text-gray-700 equivalent */
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid #9CA3AF; /* text-gray-400 equivalent */
+  padding-left: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  color: #4B5563; /* text-gray-600 equivalent */
+}
+
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid #9CA3AF; /* text-gray-400 equivalent */
+  margin: 2em 0;
+}
+
+.ProseMirror code {
+  background-color: #F3F4F6; /* bg-gray-100 equivalent */
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+  color: #4B5563; /* text-gray-600 equivalent */
+}
+
+/* Form element styles for better contrast */
+input, textarea, select {
+  color: #374151 !important; /* text-gray-700 equivalent */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6B7280 !important; /* text-gray-500 equivalent */
+  opacity: 1;
+}
+
+/* Darker focus states */
+input:focus, textarea:focus, select:focus {
+  border-color: #3B82F6 !important; /* border-blue-500 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Make select options readable */
+select option {
+  color: #374151; /* text-gray-700 equivalent */
+  background-color: #FFFFFF;
+} 

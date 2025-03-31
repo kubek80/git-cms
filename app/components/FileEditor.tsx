@@ -1,76 +1,126 @@
 'use client';
 
 import { useState } from 'react';
-import MarkdownEditor from './MarkdownEditor';
-import CMSJavaScriptEditor from './CMSJavaScriptEditor';
+import CmsEditor from './CmsEditor';
+import { CmsData } from './CmsEditor';
+import { DEFAULT_CMSJS_TEMPLATE, EMPTY_CMS_DATA } from '../utils/constants';
 
 interface FileEditorProps {
-  filePath: string;
-  initialContent: string;
-  onSave: (content: string) => Promise<void>;
+  initialContent?: string;
+  onSave?: (data: CmsData | string, isRawContent?: boolean) => void;
 }
 
-export default function FileEditor({ filePath, initialContent, onSave }: FileEditorProps) {
-  const [content, setContent] = useState(initialContent);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const isMarkdown = filePath.endsWith('.md');
-  const isCMSJS = filePath.endsWith('.cmsjs');
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    setError(null);
+export default function FileEditor({ initialContent = '', onSave }: FileEditorProps) {
+  // Parse initial content if it's a CMSJS file
+  const parseCmsJsContent = (content: string): CmsData => {
     try {
-      await onSave(content);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save file');
-    } finally {
-      setIsSaving(false);
+      // Check if it's the default template
+      if (content === DEFAULT_CMSJS_TEMPLATE || 
+          content.includes('// Add your CMS configuration here')) {
+        return { ...EMPTY_CMS_DATA };
+      }
+      
+      // Try to parse the content as a CMSJS file
+      if (content.includes('export default {')) {
+        // Extract the object portion from the export default statement
+        const objectMatch = content.match(/export default\s*(\{[\s\S]*\});?/);
+        if (objectMatch && objectMatch[1]) {
+          const objectString = objectMatch[1];
+          
+          // Extract the content section
+          const contentMatch = objectString.match(/content:\s*("[^"]*"|'[^']*'|`[^`]*`)/);
+          const contentValue = contentMatch ? contentMatch[1].slice(1, -1) : '';
+          
+          // Try to extract metadata and social objects
+          const metadataMatch = objectString.match(/metadata:\s*(\{[\s\S]*?\})/);
+          const socialMatch = objectString.match(/social:\s*(\{[\s\S]*?\})/);
+          
+          let metadata = {
+            title: '',
+            description: '',
+            keywords: '',
+            canonicalUrl: '',
+          };
+          
+          let social = {
+            ogTitle: '',
+            ogDescription: '',
+            ogImage: '',
+            twitterTitle: '',
+            twitterDescription: '',
+            twitterImage: '',
+            twitterCardType: 'summary_large_image' as const,
+          };
+          
+          // Parse metadata if available
+          if (metadataMatch) {
+            try {
+              // Replace JSON-stringified values with actual values
+              const metadataStr = metadataMatch[1].replace(/"([^"]*)"/g, (match, p1) => `"${p1}"`);
+              const metadataObj = Function(`return ${metadataStr}`)();
+              metadata = { ...metadata, ...metadataObj };
+            } catch (e) {
+              console.error('Error parsing metadata:', e);
+            }
+          }
+          
+          // Parse social if available
+          if (socialMatch) {
+            try {
+              // Replace JSON-stringified values with actual values
+              const socialStr = socialMatch[1].replace(/"([^"]*)"/g, (match, p1) => `"${p1}"`);
+              const socialObj = Function(`return ${socialStr}`)();
+              social = { ...social, ...socialObj };
+            } catch (e) {
+              console.error('Error parsing social data:', e);
+            }
+          }
+          
+          return {
+            content: contentValue,
+            metadata,
+            social,
+          };
+        }
+      }
+      
+      // If we can't parse it, just use the content as-is
+      return {
+        ...EMPTY_CMS_DATA,
+        content: content,
+      };
+    } catch (e) {
+      console.error('Error parsing CMSJS content:', e);
+      return { ...EMPTY_CMS_DATA };
+    }
+  };
+
+  // Initialize content using the parser
+  const [content, setContent] = useState<CmsData>(parseCmsJsContent(initialContent));
+
+  const handleSave = (data: CmsData | string, isRawContent?: boolean) => {
+    if (isRawContent) {
+      // This is raw file content (string)
+      console.log('Handling raw file content:', typeof data === 'string' ? data.substring(0, 100) + '...' : 'Not a string');
+      if (onSave) {
+        onSave(data, true);
+      }
+    } else {
+      // This is structured CMS data
+      const cmsData = data as CmsData;
+      setContent(cmsData);
+      if (onSave) {
+        onSave(cmsData);
+      }
     }
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 bg-white border-b">
-        <h1 className="text-xl font-semibold truncate">{filePath}</h1>
-        <div className="flex items-center gap-4">
-          {error && (
-            <p className="text-sm text-red-600">
-              {error}
-            </p>
-          )}
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
-          >
-            {isSaving ? 'Saving...' : 'Save'}
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 min-h-0 bg-white">
-        {isMarkdown && (
-          <MarkdownEditor
-            initialContent={initialContent}
-            onChange={setContent}
-          />
-        )}
-        {isCMSJS && (
-          <CMSJavaScriptEditor
-            initialContent={initialContent}
-            onChange={setContent}
-          />
-        )}
-        {!isMarkdown && !isCMSJS && (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-gray-500">
-              Unsupported file type. Only .md and .cmsjs files are supported.
-            </p>
-          </div>
-        )}
-      </div>
+    <div className="file-editor">
+      <CmsEditor 
+        initialData={content} 
+        onSave={handleSave} 
+      />
     </div>
   );
 } 
