@@ -7,7 +7,10 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import Image from '@tiptap/extension-image';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
+import { Node as TiptapNode } from '@tiptap/core';
+import { Grid3x3, Edit, Trash2, Plus } from 'lucide-react';
+import styled from 'styled-components';
 
 interface TiptapEditorProps {
   initialContent?: string;
@@ -18,50 +21,381 @@ interface MenuBarProps {
   editor: Editor | null;
 }
 
+// Define Figure extension to allow figure and figcaption elements
+const Figure = TiptapNode.create({
+  name: 'figure',
+  group: 'block',
+  content: 'image figcaption?',
+  draggable: true,
+  parseHTML() {
+    return [
+      {
+        tag: 'figure',
+      },
+    ]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['figure', { class: 'image-container', draggable: 'true', ...HTMLAttributes }, 0]
+  },
+});
+
+// Define Figcaption extension
+const Figcaption = TiptapNode.create({
+  name: 'figcaption',
+  content: 'inline*',
+  parseHTML() {
+    return [
+      {
+        tag: 'figcaption',
+      },
+    ]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['figcaption', { class: 'image-description', ...HTMLAttributes }, 0]
+  },
+});
+
+// Image Modal Component
+const ImageModal = ({ 
+  isOpen, 
+  onClose, 
+  onInsert,
+  initialData = null
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onInsert: (url: string, alt: string, description: string) => void;
+  initialData?: { src: string; alt: string; description: string } | null;
+}) => {
+  const [url, setUrl] = useState('');
+  const [alt, setAlt] = useState('');
+  const [description, setDescription] = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Set initial data if provided (for editing existing images)
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setUrl(initialData.src);
+      setAlt(initialData.alt || '');
+      
+      // Clean the description text if it exists
+      if (initialData.description) {
+        // Remove any paragraph tags and clean up the text
+        const cleanDescription = initialData.description
+          .replace(/<\/?p>/g, '')  // Remove p tags
+          .replace(/<br\s*\/?>/g, '\n') // Convert <br> to newlines
+          .trim();
+        
+        setDescription(cleanDescription);
+      } else {
+        setDescription('');
+      }
+    }
+  }, [isOpen, initialData]);
+  
+  useEffect(() => {
+    // Focus input when modal opens
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+    
+    // Handle click outside to close
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    
+    // Handle escape key to close
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+      // Reset values when modal closes
+      if (!initialData) {
+        setUrl('');
+        setAlt('');
+        setDescription('');
+      }
+    };
+  }, [isOpen, onClose, initialData]);
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (url.trim()) {
+      onInsert(url.trim(), alt.trim(), description.trim());
+      onClose();
+    }
+  };
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+      >
+        <h3 className="text-lg font-medium mb-4">{initialData ? 'Edit Image' : 'Insert Image'}</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image URL
+            </label>
+            <input
+              ref={inputRef}
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Alt Text
+            </label>
+            <input
+              type="text"
+              value={alt}
+              onChange={(e) => setAlt(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Description of the image for accessibility"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description (displayed below image)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Optional caption or description to display under the image"
+              rows={2}
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!url.trim()}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                url.trim() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-400 cursor-not-allowed'
+              }`}
+            >
+              {initialData ? 'Update' : 'Insert'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Table Insert Modal Component
+const TableInsertModal = ({ 
+  isOpen, 
+  onClose, 
+  onInsert 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onInsert: (rows: number, cols: number) => void 
+}) => {
+  const [rows, setRows] = useState(3);
+  const [cols, setCols] = useState(3);
+  const modalRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Handle click outside to close
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    
+    // Handle escape key to close
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+      // Reset values when modal closes
+      setRows(3);
+      setCols(3);
+    };
+  }, [isOpen, onClose]);
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onInsert(rows, cols);
+    onClose();
+  };
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+      >
+        <h3 className="text-lg font-medium mb-4">Insert Table</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rows
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={rows}
+                onChange={(e) => setRows(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Columns
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={cols}
+                onChange={(e) => setCols(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Insert
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const MenuBar = ({ editor }: MenuBarProps) => {
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [tableModalOpen, setTableModalOpen] = useState(false);
+  const [imageToEdit, setImageToEdit] = useState<{ src: string; alt: string; description: string } | null>(null);
+  
   if (!editor) {
     return null;
   }
 
-  const addImage = () => {
-    const url = window.prompt('Enter the URL of the image:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+  const handleEditImage = () => {
+    // Check if cursor is inside an image
+    const { state } = editor;
+    let foundImage = false;
+    
+    state.doc.nodesBetween(state.selection.from, state.selection.to, (node) => {
+      if (node.type && node.type.name === 'image' && !foundImage) {
+        // Found an image in the selection
+        const { src, alt } = node.attrs;
+        let description = '';
+        
+        // Look for description in nearby figcaption
+        const parent = state.doc.resolve(state.selection.from).parent;
+        if (parent.type && parent.type.name === 'figure') {
+          parent.forEach((childNode) => {
+            if (childNode.type && childNode.type.name === 'figcaption') {
+              description = childNode.textContent || '';
+            }
+          });
+        }
+        
+        setImageToEdit({ src, alt, description });
+        setImageModalOpen(true);
+        foundImage = true;
+        return false; // Stop traversal
+      }
+      return true; // Continue traversal
+    });
+    
+    if (!foundImage) {
+      // No image found, just open modal for insertion
+      setImageToEdit(null);
+      setImageModalOpen(true);
     }
   };
 
-  const insertTable = () => {
+  const insertTable = (rows: number, cols: number) => {
+    // Create table structure with the specified number of rows and columns
+    const tableContent = [];
+    
+    // Create header row
+    const headerRow = {
+      type: 'tableRow',
+      content: Array(cols).fill(0).map(() => ({ 
+        type: 'tableHeader', 
+        content: [{ type: 'paragraph', content: [] }] 
+      }))
+    };
+    tableContent.push(headerRow);
+    
+    // Create remaining rows
+    for (let i = 1; i < rows; i++) {
+      const row = {
+        type: 'tableRow',
+        content: Array(cols).fill(0).map(() => ({ 
+          type: 'tableCell', 
+          content: [{ type: 'paragraph', content: [] }] 
+        }))
+      };
+      tableContent.push(row);
+    }
+    
+    // Insert the table
     editor
       .chain()
       .focus()
       .insertContent({
         type: 'table',
-        content: [
-          {
-            type: 'tableRow',
-            content: [
-              { type: 'tableHeader', content: [{ type: 'paragraph', content: [] }] },
-              { type: 'tableHeader', content: [{ type: 'paragraph', content: [] }] },
-              { type: 'tableHeader', content: [{ type: 'paragraph', content: [] }] },
-            ]
-          },
-          {
-            type: 'tableRow',
-            content: [
-              { type: 'tableCell', content: [{ type: 'paragraph', content: [] }] },
-              { type: 'tableCell', content: [{ type: 'paragraph', content: [] }] },
-              { type: 'tableCell', content: [{ type: 'paragraph', content: [] }] },
-            ]
-          },
-          {
-            type: 'tableRow',
-            content: [
-              { type: 'tableCell', content: [{ type: 'paragraph', content: [] }] },
-              { type: 'tableCell', content: [{ type: 'paragraph', content: [] }] },
-              { type: 'tableCell', content: [{ type: 'paragraph', content: [] }] },
-            ]
-          }
-        ]
+        content: tableContent
       })
       .run();
   };
@@ -210,7 +544,7 @@ const MenuBar = ({ editor }: MenuBarProps) => {
         {/* Add new table and image buttons */}
         <div className="border-r mx-1 border-gray-300" />
         <button
-          onClick={insertTable}
+          onClick={() => setTableModalOpen(true)}
           className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
           title="Insert Table"
         >
@@ -223,9 +557,9 @@ const MenuBar = ({ editor }: MenuBarProps) => {
           </svg>
         </button>
         <button
-          onClick={addImage}
+          onClick={handleEditImage}
           className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
-          title="Insert Image"
+          title="Insert Image (with alt text and description)"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -257,15 +591,307 @@ const MenuBar = ({ editor }: MenuBarProps) => {
             <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
           </svg>
         </button>
+        
+        {/* Image modal */}
+        <ImageModal 
+          isOpen={imageModalOpen} 
+          onClose={() => setImageModalOpen(false)} 
+          onInsert={(url, alt, description) => {
+            // Delete any existing selection if editing an image
+            if (imageToEdit) {
+              editor.commands.deleteSelection();
+            }
+            
+            // Create content with the proper node structure
+            if (description) {
+              // With description - create a figure with an image and figcaption
+              editor.chain().focus().insertContent({
+                type: 'figure',
+                content: [
+                  {
+                    type: 'image',
+                    attrs: {
+                      src: url,
+                      alt: alt
+                    }
+                  },
+                  {
+                    type: 'figcaption',
+                    content: [
+                      {
+                        type: 'text',
+                        text: description
+                      }
+                    ]
+                  }
+                ]
+              }).run();
+            } else {
+              // Without description - just insert the image
+              editor.chain().focus().setImage({
+                src: url,
+                alt: alt
+              }).run();
+            }
+          }}
+          initialData={imageToEdit}
+        />
+        
+        {/* Table modal */}
+        <TableInsertModal
+          isOpen={tableModalOpen}
+          onClose={() => setTableModalOpen(false)}
+          onInsert={insertTable}
+        />
       </div>
     </>
   );
 };
 
+const TableControls = ({ editor, position }: { editor: Editor; position: { top: number; left: number } }) => {
+  return editor ? (
+    <div
+      className="absolute bg-white shadow-md rounded p-1 flex gap-1 border border-gray-200 z-50"
+      style={{ top: `${position.top}px`, left: `${position.left}px` }}
+    >
+      <button
+        onClick={() => editor.chain().focus().addColumnBefore().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Add column before"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().addColumnAfter().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Add column after"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().deleteColumn().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Delete column"
+      >
+        <Grid3x3 className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().addRowBefore().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Add row before"
+      >
+        <Plus className="w-4 h-4 rotate-90" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().addRowAfter().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Add row after"
+      >
+        <Plus className="w-4 h-4 rotate-90" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().deleteRow().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Delete row"
+      >
+        <Grid3x3 className="w-4 h-4 rotate-90" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().deleteTable().run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Delete table"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  ) : null;
+};
+
+const ImageControls = ({ editor, position }: { editor: Editor; position: { top: number; left: number } }) => {
+  const handleEditImage = () => {
+    // Find image node at current selection
+    const { state } = editor;
+    const { from } = state.selection;
+    
+    // Look for image at or near the current selection
+    let imageSrc = '';
+    let imageAlt = '';
+    let imagePos = -1;
+    
+    state.doc.nodesBetween(from - 10, from + 10, (node, pos) => {
+      if (node.type?.name === 'image' && !imageSrc) {
+        // Safely access the attrs using optional chaining
+        imageSrc = node.attrs?.src || '';
+        imageAlt = node.attrs?.alt || '';
+        imagePos = pos;
+        return false;
+      }
+      return true;
+    });
+
+    if (!imageSrc) return;
+    
+    // Check for figcaption (description)
+    let description = '';
+    const figureNode = state.doc.nodeAt(imagePos - 1);
+    if (figureNode && figureNode.type.name === 'figure') {
+      const figcaptionNode = figureNode.content.content.find((n: { type: { name: string } }) => n.type.name === 'figcaption');
+      if (figcaptionNode) {
+        description = figcaptionNode.textContent || '';
+      }
+    }
+
+    // Find and click the image button in MenuBar
+    const imageButton = document.querySelector('button[title="Insert Image (with alt text and description)"]');
+    if (imageButton && imageButton instanceof HTMLElement) {
+      // Use a type cast for window.__imageEditData that's safer than 'any'
+      (window as unknown as { __imageEditData: { src: string; alt: string; description: string } }).__imageEditData = {
+        src: imageSrc,
+        alt: imageAlt,
+        description
+      };
+      imageButton.click();
+    }
+  };
+
+  return editor ? (
+    <div
+      className="absolute bg-white shadow-md rounded p-1 flex gap-1 border border-gray-200 z-50"
+      style={{ top: `${position.top}px`, left: `${position.left}px` }}
+    >
+      <button
+        onClick={handleEditImage}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Edit image"
+      >
+        <Edit className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().deleteNode('figure').run()}
+        className="p-1 hover:bg-gray-100 rounded"
+        title="Delete image"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  ) : null;
+};
+
+const EditorContainer = styled.div`
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+
+  figure {
+    position: relative;
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    &::after {
+      content: '✏️';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: white;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    &:hover::after {
+      opacity: 1;
+    }
+  }
+  
+  figcaption {
+    text-align: center;
+    font-style: italic;
+    margin-top: 8px;
+    color: #666;
+    pointer-events: none;
+  }
+  
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    pointer-events: none; /* Prevent direct interaction with the image */
+    -webkit-user-drag: none; /* Disable native image dragging in browsers */
+    user-select: none; /* Prevent text selection on image */
+  }
+  
+  .ProseMirror {
+    min-height: 100px;
+    padding: 0.5rem;
+    &:focus {
+      outline: none;
+    }
+    
+    > * + * {
+      margin-top: 0.75em;
+    }
+    
+    h1 {
+      margin-top: 0;
+    }
+  }
+`;
+
 export default function TiptapEditor({ initialContent = '', onChange }: TiptapEditorProps) {
   // Ensure initialContent is properly formatted for the editor
   const formattedContent = initialContent.trim() || '<p></p>';
   const [tableMenuPosition, setTableMenuPosition] = useState({ top: 0, left: 0, show: false });
+  const [imageMenuPosition, setImageMenuPosition] = useState({ top: 0, left: 0, show: false });
+  const [contextMenu, setContextMenu] = useState<{ 
+    show: boolean; 
+    top: number; 
+    left: number; 
+    type: 'image'; 
+    data: { src: string; alt: string; description: string } 
+  } | null>(null);
+  
+  // Add global style to handle dragging
+  useEffect(() => {
+    // Create a style element for global CSS
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      .ProseMirror figure {
+        cursor: grab !important;
+      }
+      .ProseMirror figure img {
+        pointer-events: none !important;
+        -webkit-user-drag: none !important;
+        -khtml-user-drag: none !important;
+        -moz-user-drag: none !important;
+        -o-user-drag: none !important;
+        user-drag: none !important;
+        user-select: none !important;
+      }
+      .ProseMirror figure figcaption {
+        pointer-events: none !important;
+      }
+      /* While dragging */
+      .ProseMirror-selectednode {
+        outline: 2px solid #3b82f6 !important;
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Clean up
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
   
   const editor = useEditor({
     extensions: [
@@ -291,7 +917,15 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           class: 'border border-gray-300 p-2 text-gray-700',
         },
       }),
-      Image,
+      Image.configure({
+        allowBase64: false,
+        HTMLAttributes: {
+          class: 'centered-image',
+          draggable: 'false', // Set image to not be draggable
+        },
+      }),
+      Figure,
+      Figcaption,
     ],
     content: formattedContent,
     onUpdate: ({ editor }) => {
@@ -300,7 +934,35 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
       }
     },
     onSelectionUpdate: ({ editor }) => {
-      checkForTableSelection(editor);
+      // Handle table controls positioning
+      if (editor.isActive('table')) {
+        const view = editor.view;
+        const { from } = view.state.selection;
+        const start = view.coordsAtPos(from);
+        
+        setTableMenuPosition({
+          top: start.top - 50,
+          left: start.left,
+          show: true
+        });
+      } else {
+        setTableMenuPosition(prev => ({ ...prev, show: false }));
+      }
+      
+      // Handle image controls positioning
+      if (editor.isActive('image') || editor.isActive('figure')) {
+        const view = editor.view;
+        const { from } = view.state.selection;
+        const start = view.coordsAtPos(from);
+        
+        setImageMenuPosition({
+          top: start.top - 50,
+          left: start.left,
+          show: true
+        });
+      } else {
+        setImageMenuPosition(prev => ({ ...prev, show: false }));
+      }
     },
     onFocus: ({ editor }) => {
       checkForTableSelection(editor);
@@ -312,6 +974,118 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
       }, 200);
     },
   });
+  
+  // Add right-click event listener for images
+  useEffect(() => {
+    if (editor) {
+      const handleContextMenu = (e: MouseEvent) => {
+        // Check if right-clicking on an image
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'IMG') {
+          e.preventDefault();
+          
+          // Get image details
+          const img = target as HTMLImageElement;
+          const src = img.getAttribute('src') || '';
+          const alt = img.getAttribute('alt') || '';
+          
+          // Try to find description (figcaption)
+          let description = '';
+          const figureParent = img.closest('figure');
+          if (figureParent) {
+            const caption = figureParent.querySelector('figcaption.image-description');
+            if (caption) {
+              // Get text content directly to avoid paragraph wrapping issues
+              description = caption.textContent || '';
+            }
+          }
+          
+          // Show context menu
+          setContextMenu({
+            show: true,
+            top: e.clientY,
+            left: e.clientX,
+            type: 'image',
+            data: { src, alt, description }
+          });
+          
+          // Select the image in the editor
+          editor.commands.focus();
+        }
+      };
+      
+      // Handle click to close the context menu
+      const handleClick = () => {
+        setContextMenu(null);
+      };
+      
+      // Add and clean up event listeners
+      const editorElement = editor.view.dom;
+      editorElement.addEventListener('contextmenu', handleContextMenu);
+      document.addEventListener('click', handleClick);
+      
+      return () => {
+        editorElement.removeEventListener('contextmenu', handleContextMenu);
+        document.removeEventListener('click', handleClick);
+      };
+    }
+  }, [editor]);
+  
+  // Handle figure click to make the edit button work
+  useEffect(() => {
+    if (!editor) return;
+    
+    const handleFigureClick = (event: MouseEvent) => {
+      // If click target is not inside a figure, return
+      const figure = (event.target as HTMLElement).closest('figure');
+      if (!figure) return;
+      
+      // If click is not in the edit button area (top-right corner), return
+      const rect = figure.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const editButtonArea = { x: rect.width - 30, y: 0, width: 30, height: 30 };
+      
+      const isInEditArea = 
+        x >= editButtonArea.x && 
+        x <= editButtonArea.x + editButtonArea.width && 
+        y >= editButtonArea.y && 
+        y <= editButtonArea.y + editButtonArea.height;
+      
+      if (isInEditArea) {
+        // Get image data from the figure
+        const img = figure.querySelector('img');
+        
+        if (img) {
+          const src = img.getAttribute('src') || '';
+          
+          // Make the editor select the image
+          const view = editor.view;
+          const { doc } = view.state;
+          
+          let imagePos = -1;
+          doc.descendants((node, pos) => {
+            if (node.type.name === 'image' && node.attrs.src === src) {
+              imagePos = pos;
+              return false;
+            }
+            return true;
+          });
+          
+          if (imagePos >= 0) {
+            // Set selection to the image
+            editor.commands.setNodeSelection(imagePos);
+          }
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleFigureClick);
+    
+    return () => {
+      document.removeEventListener('click', handleFigureClick);
+    };
+  }, [editor]);
 
   const checkForTableSelection = useCallback((editor: Editor) => {
     if (!editor) return;
@@ -400,201 +1174,47 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
     }
   }, [editor, checkForTableSelection]);
 
-  // Simple Table Controls component that renders directly in the editor
-  const TableControls = () => {
-    if (!editor || !tableMenuPosition.show) return null;
-    
-    // Position the menu with absolute positioning
-    const style = {
-      position: 'absolute' as const,
-      top: `${tableMenuPosition.top}px`,
-      left: `${tableMenuPosition.left}px`,
-      zIndex: 50,
-      transform: 'translateY(-100%) translateY(-8px)', // Move it up by its own height plus a small offset
-    };
-    
-    // Create handlers that prevent defaults and maintain focus
-    const handleButtonClick = (fn: () => boolean) => (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      fn();
-      // Return focus to editor
-      setTimeout(() => editor.commands.focus(), 0);
-    };
-    
-    return (
-      <div style={style} className="shadow-lg border border-gray-200 rounded p-2 bg-white flex nowrap gap-1 whitespace-nowrap">
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().addColumnBefore().run())(e)}
-          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
-          title="Add Column Before"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3v18h18"></path>
-            <path d="M15 3v18"></path>
-            <path d="M9 9h6"></path>
-            <path d="M12 6v6"></path>
-          </svg>
-        </button>
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().addColumnAfter().run())(e)}
-          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
-          title="Add Column After"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3v18h18"></path>
-            <path d="M9 3v18"></path>
-            <path d="M15 9h6"></path>
-            <path d="M18 6v6"></path>
-          </svg>
-        </button>
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().addRowBefore().run())(e)}
-          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
-          title="Add Row Before"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3h18v18"></path>
-            <path d="M3 15h18"></path>
-            <path d="M9 9h6"></path>
-            <path d="M12 6v6"></path>
-          </svg>
-        </button>
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().addRowAfter().run())(e)}
-          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
-          title="Add Row After"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3h18v18"></path>
-            <path d="M3 9h18"></path>
-            <path d="M9 15h6"></path>
-            <path d="M12 12v6"></path>
-          </svg>
-        </button>
-        <div className="h-6 border-r border-gray-300 mx-1"></div>
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().deleteColumn().run())(e)}
-          className="p-1 text-sm bg-red-50 hover:bg-red-100 rounded text-red-700 flex items-center"
-          title="Delete Column"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3v18h18"></path>
-            <path d="M9 3v18"></path>
-            <path d="M15 9l-6 6"></path>
-            <path d="M9 9l6 6"></path>
-          </svg>
-        </button>
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().deleteRow().run())(e)}
-          className="p-1 text-sm bg-red-50 hover:bg-red-100 rounded text-red-700 flex items-center"
-          title="Delete Row"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3h18v18"></path>
-            <path d="M3 9h18"></path>
-            <path d="M9 15l6-6"></path>
-            <path d="M15 15l-6-6"></path>
-          </svg>
-        </button>
-        <button
-          onMouseDown={(e) => handleButtonClick(() => editor.chain().deleteTable().run())(e)}
-          className="p-1 text-sm bg-red-100 hover:bg-red-200 rounded text-red-800 flex items-center"
-          title="Delete Table"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="3" y1="9" x2="21" y2="9"></line>
-            <line x1="3" y1="15" x2="21" y2="15"></line>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-            <line x1="15" y1="3" x2="15" y2="21"></line>
-            <line x1="4" y1="4" x2="20" y2="20"></line>
-          </svg>
-        </button>
-      </div>
-    );
-  };
-
   return (
-    <div className="border border-gray-300 rounded-md overflow-hidden relative">
+    <EditorContainer className="prose dark:prose-invert">
       <MenuBar editor={editor} />
-      <div className="relative">
-        {editor && <TableControls />}
-        <EditorContent 
-          editor={editor} 
-          className="prose max-w-none p-3 min-h-[300px] focus:outline-none editor-content" 
-        />
-      </div>
-      <style jsx global>{`
-        .editor-content .ProseMirror {
-          min-height: 300px;
-          padding: 12px;
-          outline: none;
-        }
-        
-        /* Remove top margin from h1 */
-        .editor-content .ProseMirror h1 {
-          margin-top: 0;
-          margin-bottom: 0.5em;
-        }
-        
-        /* Consistent spacing for headings */
-        .editor-content .ProseMirror h2,
-        .editor-content .ProseMirror h3 {
-          margin-top: 1em;
-          margin-bottom: 0.5em;
-        }
-        
-        .editor-content table {
-          border-collapse: collapse;
-          margin: 0;
-          overflow: hidden;
-          table-layout: fixed;
-          width: 100%;
-        }
-        
-        .editor-content table td,
-        .editor-content table th {
-          border: 1px solid #e2e8f0;
-          box-sizing: border-box;
-          min-width: 1em;
-          padding: 8px;
-          position: relative;
-          vertical-align: top;
-        }
-        
-        .editor-content table th {
-          background-color: #f8fafc;
-          font-weight: 500;
-          text-align: left;
-        }
-        
-        .editor-content table .selectedCell:after {
-          background: rgba(59, 130, 246, 0.1);
-          content: "";
-          left: 0;
-          right: 0;
-          top: 0;
-          bottom: 0;
-          pointer-events: none;
-          position: absolute;
-          z-index: 2;
-        }
-        
-        .editor-content .tableWrapper {
-          padding: 1rem 0;
-          overflow-x: auto;
-        }
-        
-        .editor-content .resize-cursor {
-          cursor: col-resize;
-        }
-        
-        /* Add a highlight to tables when selected */
-        .editor-content table.ProseMirror-selectednode {
-          outline: 2px solid #3b82f6;
-        }
-      `}</style>
-    </div>
+      {tableMenuPosition.show && (
+        <TableControls editor={editor!} position={tableMenuPosition} />
+      )}
+      {imageMenuPosition.show && (
+        <ImageControls editor={editor!} position={imageMenuPosition} />
+      )}
+      <EditorContent editor={editor} />
+      {contextMenu && contextMenu.show && (
+        <div 
+          className="fixed bg-white shadow-lg border border-gray-200 rounded z-50 py-1"
+          style={{ 
+            top: `${contextMenu.top}px`, 
+            left: `${contextMenu.left}px`,
+          }}
+        >
+          <button 
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+            onClick={() => {
+              // First we select the image
+              editor?.chain().focus().run();
+              
+              // Then we find and target the image modal through the MenuBar
+              document.querySelectorAll('button').forEach(button => {
+                if (button.title?.includes('Insert Image')) {
+                  button.click();
+                }
+              });
+              
+              setContextMenu(null);
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+            Edit Image
+          </button>
+        </div>
+      )}
+    </EditorContainer>
   );
 } 
