@@ -3,6 +3,30 @@
 // Default template for .cmsjs files
 export const DEFAULT_CMSJS_TEMPLATE = `export default { // Add your CMS configuration here };`;
 
+// Default template for .cms.json files
+export const DEFAULT_CMS_JSON_TEMPLATE = JSON.stringify(
+  {
+    content: "",
+    metadata: {
+      title: "",
+      description: "",
+      keywords: "",
+      canonicalUrl: "",
+    },
+    social: {
+      ogTitle: "",
+      ogDescription: "",
+      ogImage: "",
+      twitterTitle: "",
+      twitterDescription: "",
+      twitterImage: "",
+      twitterCardType: "summary_large_image",
+    },
+  },
+  null,
+  2
+);
+
 // Empty CMS data structure
 export const EMPTY_CMS_DATA = {
   content: "",

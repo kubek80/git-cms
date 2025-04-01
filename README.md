@@ -1,12 +1,12 @@
 # GitCMS
 
-GitCMS is a lightweight, Git-based content management system that creates JavaScript files for your content. It provides an easy-to-use interface for creating and editing content, with metadata for SEO and social sharing.
+GitCMS is a lightweight, Git-based content management system that creates JSON files for your content. It provides an easy-to-use interface for creating and editing content, with metadata for SEO and social sharing.
 
 ## Features
 
 - Rich text editor powered by Tiptap
 - Separate tabs for content, metadata, and social sharing information
-- Exports content as JavaScript (.cmsjs) files
+- Exports content as JSON (.cms.json) files
 - Easy integration with your front-end application
 - Version control through Git
 
@@ -38,27 +38,24 @@ The CMS Editor has three tabs:
 2. **Metadata**: Add SEO-related information like title, description, keywords, and canonical URL.
 3. **Social**: Configure how your content appears when shared on social media platforms.
 
-After filling in the necessary information, click the "Export .cmsjs File" button to download your content as a JavaScript file.
+After filling in the necessary information, click the "Export .cms.json File" button to download your content as a JSON file.
 
-## .cmsjs File Format
+## .cms.json File Format
 
-The exported .cmsjs file has the following structure:
+The exported .cms.json file has the following structure:
 
-```javascript
-export default {
-  // Content section - contains the HTML content from the editor
-  content: "<p>Your content here...</p>",
+```json
+{
+  "content": "<p>Your content here...</p>",
   
-  // Metadata section - contains SEO related information
-  metadata: {
+  "metadata": {
     "title": "Page Title",
     "description": "Page description",
     "keywords": "comma, separated, keywords",
     "canonicalUrl": "https://example.com/page"
   },
   
-  // Social section - contains social sharing information
-  social: {
+  "social": {
     "ogTitle": "Title for social sharing",
     "ogDescription": "Description for social sharing",
     "ogImage": "https://example.com/image.jpg",
@@ -67,24 +64,27 @@ export default {
     "twitterImage": "https://example.com/twitter-image.jpg",
     "twitterCardType": "summary_large_image"
   }
-};
+}
 ```
 
 ## Importing Content in Your Application
 
-You can import the .cmsjs file in your application like any other JavaScript module:
+You can import the .cms.json file in your application:
 
 ```javascript
-import pageContent from './content.cmsjs';
+// Using fetch to load the JSON file
+fetch('/content.cms.json')
+  .then(response => response.json())
+  .then(data => {
+    // Access content
+    console.log(data.content);
 
-// Access content
-console.log(pageContent.content);
+    // Access metadata
+    console.log(data.metadata.title);
 
-// Access metadata
-console.log(pageContent.metadata.title);
-
-// Access social information
-console.log(pageContent.social.ogTitle);
+    // Access social information
+    console.log(data.social.ogTitle);
+  });
 ```
 
 ## License

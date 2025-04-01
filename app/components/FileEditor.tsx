@@ -4,7 +4,7 @@ import { useState } from 'react';
 import CmsEditor from './CmsEditor';
 import MarkdownEditor from './MarkdownEditor';
 import { CmsData } from './CmsEditor';
-import { DEFAULT_CMSJS_TEMPLATE, EMPTY_CMS_DATA } from '../utils/constants';
+import { EMPTY_CMS_DATA } from '../utils/constants';
 
 interface FileEditorProps {
   initialContent?: string;
@@ -14,135 +14,77 @@ interface FileEditorProps {
 
 export default function FileEditor({ initialContent = '', filePath = '', onSave }: FileEditorProps) {
   const isMarkdownFile = filePath.toLowerCase().endsWith('.md');
-  // Parse initial content if it's a CMSJS file
-  const parseCmsJsContent = (content: string): CmsData => {
+  const isCmsJsonFile = filePath.toLowerCase().endsWith('.cms.json');
+  
+  // Parse initial content if it's a CMS JSON file
+  const parseCmsJsonContent = (content: string): CmsData => {
     try {
-      // Check if it's the default template
-      if (content === DEFAULT_CMSJS_TEMPLATE || 
-          content.includes('// Add your CMS configuration here')) {
+      // If the content is empty, return empty CMS data
+      if (!content || content.trim() === '') {
         return { ...EMPTY_CMS_DATA };
       }
       
-      // Try to parse the content as a CMSJS file
-      if (content.includes('export default {')) {
-        // Extract the object portion from the export default statement
-        const objectMatch = content.match(/export default\s*(\{[\s\S]*\});?/);
-        if (objectMatch && objectMatch[1]) {
-          const objectString = objectMatch[1];
-          
-          // Extract the content section
-          const contentMatch = objectString.match(/content:\s*("[^"]*"|'[^']*'|`[^`]*`)/);
-          const contentValue = contentMatch ? contentMatch[1].slice(1, -1) : '';
-          
-          // Try to extract metadata and social objects
-          const metadataMatch = objectString.match(/metadata:\s*(\{[\s\S]*?\})/);
-          const socialMatch = objectString.match(/social:\s*(\{[\s\S]*?\})/);
-          
-          let metadata = {
-            title: '',
-            description: '',
-            keywords: '',
-            canonicalUrl: '',
-          };
-          
-          let social = {
-            ogTitle: '',
-            ogDescription: '',
-            ogImage: '',
-            twitterTitle: '',
-            twitterDescription: '',
-            twitterImage: '',
-            twitterCardType: 'summary_large_image' as const,
-          };
-          
-          // Parse metadata if available
-          if (metadataMatch) {
-            try {
-              // Replace JSON-stringified values with actual values
-              const metadataStr = metadataMatch[1].replace(/"([^"]*)"/g, (match, p1) => `"${p1}"`);
-              const metadataObj = Function(`return ${metadataStr}`)();
-              metadata = { ...metadata, ...metadataObj };
-            } catch (e) {
-              console.error('Error parsing metadata:', e);
-            }
-          }
-          
-          // Parse social if available
-          if (socialMatch) {
-            try {
-              // Replace JSON-stringified values with actual values
-              const socialStr = socialMatch[1].replace(/"([^"]*)"/g, (match, p1) => `"${p1}"`);
-              const socialObj = Function(`return ${socialStr}`)();
-              social = { ...social, ...socialObj };
-            } catch (e) {
-              console.error('Error parsing social data:', e);
-            }
-          }
-          
-          return {
-            content: contentValue,
-            metadata,
-            social,
-          };
-        }
-      }
+      // Parse the JSON content
+      const parsedContent = JSON.parse(content);
       
-      // If we can't parse it, just use the content as-is
       return {
-        ...EMPTY_CMS_DATA,
-        content: content,
+        content: parsedContent.content || '',
+        metadata: {
+          title: parsedContent.metadata?.title || '',
+          description: parsedContent.metadata?.description || '',
+          keywords: parsedContent.metadata?.keywords || '',
+          canonicalUrl: parsedContent.metadata?.canonicalUrl || '',
+        },
+        social: {
+          ogTitle: parsedContent.social?.ogTitle || '',
+          ogDescription: parsedContent.social?.ogDescription || '',
+          ogImage: parsedContent.social?.ogImage || '',
+          twitterTitle: parsedContent.social?.twitterTitle || '',
+          twitterDescription: parsedContent.social?.twitterDescription || '',
+          twitterImage: parsedContent.social?.twitterImage || '',
+          twitterCardType: parsedContent.social?.twitterCardType || 'summary_large_image',
+        },
       };
     } catch (e) {
-      console.error('Error parsing CMSJS content:', e);
+      console.error('Error parsing CMS JSON content:', e);
       return { ...EMPTY_CMS_DATA };
     }
   };
 
-  // Initialize content using the parser
-  const [content, setContent] = useState<CmsData>(parseCmsJsContent(initialContent));
+  // Initialize state
+  const [contentData] = useState<CmsData>(isCmsJsonFile ? parseCmsJsonContent(initialContent) : { ...EMPTY_CMS_DATA });
   const [markdownContent, setMarkdownContent] = useState<string>(initialContent);
 
-  const handleSave = (data: CmsData | string, isRawContent?: boolean) => {
-    if (isRawContent) {
-      // This is raw file content (string)
-      console.log('Handling raw file content:', typeof data === 'string' ? data.substring(0, 100) + '...' : 'Not a string');
-      if (onSave) {
-        onSave(data, true);
-      }
-    } else {
-      // This is structured CMS data
-      const cmsData = data as CmsData;
-      setContent(cmsData);
-      if (onSave) {
-        onSave(cmsData);
-      }
-    }
+  // Handle content changes in the markdown editor
+  const handleMarkdownChange = (content: string) => {
+    setMarkdownContent(content);
   };
 
-  const handleMarkdownChange = (newContent: string) => {
-    setMarkdownContent(newContent);
-    // Do not call onSave here - it will be called when the save button is clicked
-  };
-
-  const handleMarkdownSave = (contentToSave: string) => {
+  // Handle saving markdown content
+  const handleMarkdownSave = (content: string) => {
     if (onSave) {
-      onSave(contentToSave, true);
+      onSave(content, true);
     }
   };
 
   return (
-    <div className="file-editor">
+    <div>
       {isMarkdownFile ? (
         <MarkdownEditor 
           initialContent={markdownContent} 
           onChange={handleMarkdownChange} 
-          onSave={handleMarkdownSave}
+          onSave={handleMarkdownSave} 
+        />
+      ) : isCmsJsonFile ? (
+        <CmsEditor 
+          initialData={contentData} 
+          onSave={onSave || (() => {})} 
         />
       ) : (
-        <CmsEditor 
-          initialData={content} 
-          onSave={handleSave} 
-        />
+        <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+          <p className="font-medium">Unsupported file type</p>
+          <p>This editor only supports Markdown (.md) and CMS JSON (.cms.json) files.</p>
+        </div>
       )}
     </div>
   );

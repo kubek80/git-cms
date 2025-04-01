@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import FileEditor from '../components/FileEditor';
 import { CmsData } from '../components/CmsEditor';
-import { DEFAULT_CMSJS_TEMPLATE } from '../utils/constants';
+import { DEFAULT_CMS_JSON_TEMPLATE } from '../utils/constants';
 
 export default function FilePage() {
   const [savedData, setSavedData] = useState<CmsData | null>(null);
@@ -15,7 +15,7 @@ export default function FilePage() {
   useEffect(() => {
     // In a real app, this would come from the server or URL params
     // For now, just use our default template
-    setInitialContent(DEFAULT_CMSJS_TEMPLATE);
+    setInitialContent(DEFAULT_CMS_JSON_TEMPLATE);
   }, []);
 
   const handleSave = (data: CmsData | string, isRawContent?: boolean) => {

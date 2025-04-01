@@ -1,17 +1,14 @@
-export default {
-  // Content section - contains the HTML content from the editor
-  content: "",
+{
+  "content": "",
   
-  // Metadata section - contains SEO related information
-  metadata: {
+  "metadata": {
     "title": "",
     "description": "",
     "keywords": "",
     "canonicalUrl": ""
   },
   
-  // Social section - contains social sharing information
-  social: {
+  "social": {
     "ogTitle": "",
     "ogDescription": "",
     "ogImage": "",
@@ -20,4 +17,4 @@ export default {
     "twitterImage": "",
     "twitterCardType": "summary_large_image"
   }
-}; 
+} 

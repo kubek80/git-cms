@@ -17,17 +17,17 @@ export default function CmsModal({ isOpen, onClose, cmsData, onSaveToRepository 
   const [copied, setCopied] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   
-  // Format the data as JavaScript object
-  const jsContent = `export default {
-  // Content section - contains the HTML content from the editor
-  content: ${JSON.stringify(cmsData.content, null, 2)},
-  
-  // Metadata section - contains SEO related information
-  metadata: ${JSON.stringify(cmsData.metadata, null, 2)},
-  
-  // Social section - contains social sharing information
-  social: ${JSON.stringify(cmsData.social, null, 2)}
-};`;
+  // Format the data as JSON object
+  const jsonContent = JSON.stringify({
+    // Content section - contains the HTML content from the editor
+    content: cmsData.content,
+    
+    // Metadata section - contains SEO related information
+    metadata: cmsData.metadata,
+    
+    // Social section - contains social sharing information
+    social: cmsData.social
+  }, null, 2);
 
   // Handle clicking outside to close
   useEffect(() => {
@@ -70,18 +70,18 @@ export default function CmsModal({ isOpen, onClose, cmsData, onSaveToRepository 
 
   // Copy to clipboard functionality
   const handleCopy = () => {
-    navigator.clipboard.writeText(jsContent);
+    navigator.clipboard.writeText(jsonContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   // Handle download
   const handleDownload = () => {
-    const blob = new Blob([jsContent], { type: 'application/javascript' });
+    const blob = new Blob([jsonContent], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'content.cmsjs';
+    a.download = 'content.cms.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -90,8 +90,8 @@ export default function CmsModal({ isOpen, onClose, cmsData, onSaveToRepository 
 
   // Handle saving to repository
   const handleSaveToRepository = () => {
-    // We need to pass the raw JavaScript string, not the structured data object
-    const contentToSave = jsContent;
+    // We need to pass the raw JSON string, not the structured data object
+    const contentToSave = jsonContent;
     onSaveToRepository(contentToSave);
     onClose();
   };
@@ -109,7 +109,7 @@ export default function CmsModal({ isOpen, onClose, cmsData, onSaveToRepository 
         className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
       >
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-xl font-medium text-gray-800">Export CMSJS File</h2>
+          <h2 className="text-xl font-medium text-gray-800">Export CMS JSON File</h2>
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleTheme}
@@ -160,7 +160,7 @@ export default function CmsModal({ isOpen, onClose, cmsData, onSaveToRepository 
           
           <div className="w-full h-full min-h-[400px] font-mono rounded-md overflow-hidden">
             <SyntaxHighlighter 
-              language="javascript" 
+              language="json" 
               style={codeStyle} 
               customStyle={{ 
                 margin: 0, 
@@ -175,7 +175,7 @@ export default function CmsModal({ isOpen, onClose, cmsData, onSaveToRepository 
               wrapLines={true}
               lineProps={{ style: { wordBreak: 'break-all', whiteSpace: 'pre-wrap' } }}
             >
-              {jsContent}
+              {jsonContent}
             </SyntaxHighlighter>
           </div>
         </div>

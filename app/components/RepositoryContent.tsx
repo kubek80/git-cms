@@ -25,7 +25,7 @@ export default function RepositoryContent({
 }: RepositoryContentProps) {
   const [showNewFileDialog, setShowNewFileDialog] = useState(false);
   const [newFileName, setNewFileName] = useState('');
-  const [fileType, setFileType] = useState<'md' | 'cmsjs'>('md');
+  const [fileType, setFileType] = useState<'md' | 'cms.json'>('md');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState(branches[0] || 'main');
@@ -34,7 +34,7 @@ export default function RepositoryContent({
     if (!newFileName) return;
     
     // Remove any extension the user might have added
-    const baseName = newFileName.replace(/\.(md|cmsjs)$/, '');
+    const baseName = newFileName.replace(/\.(md|cms\.json)$/, '');
     const fullFileName = `(content)/${baseName}.${fileType}`;
 
     setIsCreating(true);
@@ -44,7 +44,24 @@ export default function RepositoryContent({
       // Create initial content based on file type
       const initialContent = fileType === 'md' 
         ? '# New Document\n\nStart writing your content here...'
-        : 'export default {\n  // Add your CMS configuration here\n};';
+        : JSON.stringify({
+            content: "",
+            metadata: {
+              title: "",
+              description: "",
+              keywords: "",
+              canonicalUrl: ""
+            },
+            social: {
+              ogTitle: "",
+              ogDescription: "",
+              ogImage: "",
+              twitterTitle: "",
+              twitterDescription: "",
+              twitterImage: "",
+              twitterCardType: "summary_large_image"
+            }
+          }, null, 2);
 
       // Create the file directly in main branch
       await createFile(repositoryId, fullFileName, initialContent);
@@ -64,7 +81,7 @@ export default function RepositoryContent({
 
   const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Remove any file extension the user might type
-    const value = e.target.value.replace(/\.(md|cmsjs)$/, '');
+    const value = e.target.value.replace(/\.(md|cms\.json)$/, '');
     setNewFileName(value);
   };
 
@@ -104,7 +121,7 @@ export default function RepositoryContent({
           </button>
           <button
             onClick={() => {
-              setFileType('cmsjs');
+              setFileType('cms.json');
               setShowNewFileDialog(true);
               setNewFileName('');
             }}
@@ -113,7 +130,7 @@ export default function RepositoryContent({
             <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
-            New .cmsjs file
+            New .cms.json file
           </button>
         </div>
       </div>
@@ -122,7 +139,7 @@ export default function RepositoryContent({
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full">
             <h3 className="text-xl font-medium text-gray-900 mb-6">
-              Create new {fileType === 'md' ? 'Markdown' : 'CMS JavaScript'} file
+              Create new {fileType === 'md' ? 'Markdown' : 'CMS JSON'} file
             </h3>
             <div className="space-y-6">
               <div>
