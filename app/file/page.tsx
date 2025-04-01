@@ -36,7 +36,7 @@ export default function FilePage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">File Editor</h1>
         <p className="mb-8 text-gray-700">
-          Edit files using the CMSJS format. The editor will generate structured content
+          Edit files using the JSON format. The editor will generate structured content
           with metadata and social information.
         </p>
         
@@ -44,7 +44,7 @@ export default function FilePage() {
         
         {savedRawContent && (
           <div className="mt-8 p-4 bg-gray-100 rounded-md">
-            <h2 className="text-xl font-medium mb-4 text-gray-800">Raw JS File Content:</h2>
+            <h2 className="text-xl font-medium mb-4 text-gray-800">Raw JSON Content:</h2>
             <pre className="bg-white p-4 rounded border overflow-auto max-h-48 text-gray-700">
               {savedRawContent}
             </pre>

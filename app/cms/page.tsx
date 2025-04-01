@@ -20,7 +20,7 @@ export default function CmsPage() {
         <h1 className="text-3xl font-bold mb-6 text-gray-800">CMS Editor</h1>
         <p className="mb-8 text-gray-700">
           Create and edit content with metadata and social sharing information. The editor will 
-          generate a .cmsjs file that can be used in your front-end application.
+          generate a .cms.json file that can be used in your front-end application.
         </p>
         
         <div className="mb-6">
