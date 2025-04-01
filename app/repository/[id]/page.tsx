@@ -52,7 +52,7 @@ export default function RepositoryPage() {
     <Layout>
       <div className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} />
-        <h1 className="text-2xl font-bold">Repository: {repositoryId}</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Repository: {repositoryId}</h1>
 
         {loading && (
           <div className="text-gray-600">Loading repository content...</div>

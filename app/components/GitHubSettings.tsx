@@ -33,14 +33,14 @@ export default function GitHubSettings() {
       <div className="bg-white p-6 rounded-lg shadow-sm border space-y-6">
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Personal Access Token</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Personal Access Token</h2>
             <p className="text-gray-600 text-sm mt-1">
               A token is required to access and modify your GitHub repositories.
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="block font-medium">
+            <label className="block font-medium text-gray-800">
               Token
             </label>
             <input
@@ -61,9 +61,9 @@ export default function GitHubSettings() {
         </div>
 
         <div className="space-y-4 border-t pt-6">
-          <h3 className="font-semibold">Required Token Permissions</h3>
+          <h3 className="font-semibold text-gray-800">Required Token Permissions</h3>
           <div className="space-y-3 text-sm">
-            <p>Your token needs the following permissions to work properly:</p>
+            <p className="text-gray-600">Your token needs the following permissions to work properly:</p>
             <ul className="space-y-2 list-disc pl-5 text-gray-600">
               <li>
                 <span className="font-semibold">repo</span> - Full control of private repositories
