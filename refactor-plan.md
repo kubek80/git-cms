@@ -35,14 +35,14 @@ app/components/TiptapEditor/
 ## Tasks
 
 ### Setup and Structure
-- [ ] Create folder structure
-- [ ] Create initial index.ts file
+- [x] Create folder structure
+- [x] Create initial index.ts file
 - [ ] Set up exports/imports between files
 
 ### Extension Components
-- [ ] Extract Figure extension to its own file
-- [ ] Extract Figcaption extension to its own file
-- [ ] Create extensions/index.ts with all extensions configuration
+- [x] Extract Figure extension to its own file
+- [x] Extract Figcaption extension to its own file
+- [x] Create extensions/index.ts with all extensions configuration
 
 ### Toolbar Components
 - [ ] Create EditorToolbar component
@@ -51,23 +51,23 @@ app/components/TiptapEditor/
 - [ ] Extract InsertToolbar component (table, image, etc.)
 
 ### Contextual Controls
-- [ ] Create ContextualControls parent component
-- [ ] Extract TableControls component
-- [ ] Extract ImageControls component
-- [ ] Implement proper positioning logic in hook files
+- [x] Create ContextualControls parent component
+- [x] Extract TableControls component
+- [x] Extract ImageControls component
+- [x] Implement proper positioning logic in hook files
 
 ### Modal Components
-- [ ] Extract ImageModal component
-- [ ] Extract TableModal component
+- [x] Extract ImageModal component
+- [x] Extract TableModal component
 - [ ] Ensure modals work with editor context
 
 ### Context Menu
-- [ ] Extract ContextMenu component
+- [x] Extract ContextMenu component
 - [ ] Ensure proper event handling
 
 ### Styling
-- [ ] Create EditorStyles component with styled-components
-- [ ] Extract global styles to GlobalStyles component
+- [x] Create EditorStyles component with styled-components
+- [x] Extract global styles to GlobalStyles component
 - [ ] Ensure consistent styling across components
 
 ### Main Component
