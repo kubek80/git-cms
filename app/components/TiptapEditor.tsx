@@ -35,7 +35,12 @@ const Figure = TiptapNode.create({
     ]
   },
   renderHTML({ HTMLAttributes }) {
-    return ['figure', { class: 'image-container', draggable: 'true', ...HTMLAttributes }, 0]
+    return ['figure', { 
+      class: 'image-container', 
+      draggable: 'true',
+      style: 'width: 100%; margin: 2rem auto; padding: 1rem; box-sizing: border-box;',
+      ...HTMLAttributes 
+    }, 0]
   },
 });
 
@@ -402,144 +407,144 @@ const MenuBar = ({ editor }: MenuBarProps) => {
 
   return (
     <>
-      <div className="border-b border-gray-200 bg-gray-100 p-2 flex flex-wrap gap-1">
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('bold') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Bold"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-bold">
-            <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
-            <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
-          </svg>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('italic') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Italic"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-italic">
-            <line x1="19" y1="4" x2="10" y2="4"></line>
-            <line x1="14" y1="20" x2="5" y2="20"></line>
-            <line x1="15" y1="4" x2="9" y2="20"></line>
-          </svg>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('strike') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Strike"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-strikethrough">
-            <path d="M17.3 5H6.7a.7.7 0 0 0-.7.7v1.6c0 .4.3.7.7.7h10.6a.7.7 0 0 0 .7-.7V5.7a.7.7 0 0 0-.7-.7z" />
-            <line x1="4" y1="12" x2="20" y2="12"></line>
-            <path d="M6.7 19h10.6a.7.7 0 0 0 .7-.7v-1.6a.7.7 0 0 0-.7-.7H6.7a.7.7 0 0 0-.7.7v1.6c0 .4.3.7.7.7z" />
-          </svg>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('code') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Code"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-code">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
-          </svg>
-        </button>
-        <div className="border-r mx-1 border-gray-300" />
+    <div className="border-b border-gray-200 bg-gray-100 p-2 flex flex-wrap gap-1">
+      <button
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('bold') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Bold"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-bold">
+          <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+          <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('italic') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Italic"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-italic">
+          <line x1="19" y1="4" x2="10" y2="4"></line>
+          <line x1="14" y1="20" x2="5" y2="20"></line>
+          <line x1="15" y1="4" x2="9" y2="20"></line>
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('strike') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Strike"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-strikethrough">
+          <path d="M17.3 5H6.7a.7.7 0 0 0-.7.7v1.6c0 .4.3.7.7.7h10.6a.7.7 0 0 0 .7-.7V5.7a.7.7 0 0 0-.7-.7z" />
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <path d="M6.7 19h10.6a.7.7 0 0 0 .7-.7v-1.6a.7.7 0 0 0-.7-.7H6.7a.7.7 0 0 0-.7.7v1.6c0 .4.3.7.7.7z" />
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('code') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Code"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-code">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      </button>
+      <div className="border-r mx-1 border-gray-300" />
         
         {/* Headings section - improved layout */}
         <div className="flex items-center rounded overflow-hidden border border-gray-300">
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             className={`px-2 py-1 ${
               editor.isActive('heading', { level: 1 }) ? 'bg-blue-200 text-blue-800' : 'bg-white text-gray-700'
-            }`}
-            title="Heading 1"
-          >
+        }`}
+        title="Heading 1"
+      >
             H1
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             className={`px-2 py-1 border-l border-gray-300 ${
               editor.isActive('heading', { level: 2 }) ? 'bg-blue-200 text-blue-800' : 'bg-white text-gray-700'
-            }`}
-            title="Heading 2"
-          >
+        }`}
+        title="Heading 2"
+      >
             H2
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             className={`px-2 py-1 border-l border-gray-300 ${
               editor.isActive('heading', { level: 3 }) ? 'bg-blue-200 text-blue-800' : 'bg-white text-gray-700'
-            }`}
-            title="Heading 3"
-          >
+        }`}
+        title="Heading 3"
+      >
             H3
-          </button>
+      </button>
         </div>
         
-        <div className="border-r mx-1 border-gray-300" />
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('bulletList') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Bullet List"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-list">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <circle cx="3" cy="6" r="1"></circle>
-            <circle cx="3" cy="12" r="1"></circle>
-            <circle cx="3" cy="18" r="1"></circle>
-          </svg>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('orderedList') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Ordered List"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-list-ordered">
-            <line x1="10" y1="6" x2="21" y2="6"></line>
-            <line x1="10" y1="12" x2="21" y2="12"></line>
-            <line x1="10" y1="18" x2="21" y2="18"></line>
-            <path d="M4 6h1v4"></path>
-            <path d="M4 10h2"></path>
-            <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
-          </svg>
-        </button>
-        <div className="border-r mx-1 border-gray-300" />
-        <button
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive('blockquote') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
-          }`}
-          title="Blockquote"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-message-square">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
-          title="Horizontal Rule"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-minus">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
+      <div className="border-r mx-1 border-gray-300" />
+      <button
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('bulletList') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Bullet List"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-list">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <circle cx="3" cy="6" r="1"></circle>
+          <circle cx="3" cy="12" r="1"></circle>
+          <circle cx="3" cy="18" r="1"></circle>
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('orderedList') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Ordered List"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-list-ordered">
+          <line x1="10" y1="6" x2="21" y2="6"></line>
+          <line x1="10" y1="12" x2="21" y2="12"></line>
+          <line x1="10" y1="18" x2="21" y2="18"></line>
+          <path d="M4 6h1v4"></path>
+          <path d="M4 10h2"></path>
+          <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
+        </svg>
+      </button>
+      <div className="border-r mx-1 border-gray-300" />
+      <button
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={`px-2 py-1 rounded ${
+          editor.isActive('blockquote') ? 'bg-blue-200 text-blue-800' : 'bg-white border border-gray-300 text-gray-700'
+        }`}
+        title="Blockquote"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-message-square">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
+        title="Horizontal Rule"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-minus">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
         
         {/* Add new table and image buttons */}
         <div className="border-r mx-1 border-gray-300" />
@@ -568,29 +573,29 @@ const MenuBar = ({ editor }: MenuBarProps) => {
           </svg>
         </button>
         
-        <div className="border-r mx-1 border-gray-300" />
-        <button
-          onClick={() => editor.chain().focus().undo().run()}
-          className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
-          title="Undo"
-          disabled={!editor.can().undo()}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-corner-up-left">
-            <polyline points="9 14 4 9 9 4"></polyline>
-            <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-          </svg>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().redo().run()}
-          className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
-          title="Redo"
-          disabled={!editor.can().redo()}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-corner-up-right">
-            <polyline points="15 14 20 9 15 4"></polyline>
-            <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
-          </svg>
-        </button>
+      <div className="border-r mx-1 border-gray-300" />
+      <button
+        onClick={() => editor.chain().focus().undo().run()}
+        className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
+        title="Undo"
+        disabled={!editor.can().undo()}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-corner-up-left">
+          <polyline points="9 14 4 9 9 4"></polyline>
+          <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+        </svg>
+      </button>
+      <button
+        onClick={() => editor.chain().focus().redo().run()}
+        className="px-2 py-1 rounded bg-white border border-gray-300 text-gray-700"
+        title="Redo"
+        disabled={!editor.can().redo()}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-corner-up-right">
+          <polyline points="15 14 20 9 15 4"></polyline>
+          <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
+        </svg>
+      </button>
         
         {/* Image modal */}
         <ImageModal 
@@ -643,7 +648,7 @@ const MenuBar = ({ editor }: MenuBarProps) => {
           onClose={() => setTableModalOpen(false)}
           onInsert={insertTable}
         />
-      </div>
+    </div>
     </>
   );
 };
@@ -756,22 +761,22 @@ const ImageControls = ({ editor, position }: { editor: Editor; position: { top: 
 
   return editor ? (
     <div
-      className="absolute bg-white shadow-md rounded p-1 flex gap-1 border border-gray-200 z-50"
+      className="absolute bg-white shadow-md rounded-md p-1.5 flex gap-2 border border-gray-300 z-50"
       style={{ top: `${position.top}px`, left: `${position.left}px` }}
     >
       <button
         onClick={handleEditImage}
-        className="p-1 hover:bg-gray-100 rounded"
+        className="p-1.5 hover:bg-blue-50 rounded-md text-gray-800"
         title="Edit image"
       >
-        <Edit className="w-4 h-4" />
+        <Edit className="w-5 h-5" />
       </button>
       <button
         onClick={() => editor.chain().focus().deleteNode('figure').run()}
-        className="p-1 hover:bg-gray-100 rounded"
+        className="p-1.5 hover:bg-red-50 rounded-md text-gray-800"
         title="Delete image"
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash2 className="w-5 h-5" />
       </button>
     </div>
   ) : null;
@@ -787,10 +792,16 @@ const EditorContainer = styled.div`
     cursor: grab;
     transition: all 0.2s ease;
     user-select: none;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 1rem;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #f9f9f9;
     
     &:hover {
-      background-color: rgba(0, 0, 0, 0.03);
-      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+      background-color: rgba(0, 0, 0, 0.02);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
     }
     
     &::after {
@@ -815,19 +826,26 @@ const EditorContainer = styled.div`
   figcaption {
     text-align: center;
     font-style: italic;
-    margin-top: 8px;
+    margin-top: 12px;
     color: #666;
     pointer-events: none;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   img {
     display: block;
     max-width: 100%;
+    width: auto;
     height: auto;
     margin: 0 auto;
+    padding-top: 0.5rem;
     pointer-events: none; /* Prevent direct interaction with the image */
     -webkit-user-drag: none; /* Disable native image dragging in browsers */
     user-select: none; /* Prevent text selection on image */
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
   }
   
   .ProseMirror {
@@ -867,7 +885,20 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
     styleElement.innerHTML = `
       .ProseMirror figure {
         cursor: grab !important;
+        width: 100% !important;
+        margin: 2rem auto !important;
+        padding: 1rem !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+        box-sizing: border-box !important; 
+        background-color: #f9f9f9 !important;
       }
+      
+      .ProseMirror figure:hover {
+        background-color: rgba(0, 0, 0, 0.02) !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+      }
+      
       .ProseMirror figure img {
         pointer-events: none !important;
         -webkit-user-drag: none !important;
@@ -876,13 +907,56 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
         -o-user-drag: none !important;
         user-drag: none !important;
         user-select: none !important;
+        display: block !important;
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        margin: 0 auto !important;
+        padding-top: 0.5rem !important;
+        border-radius: 4px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        box-sizing: border-box !important;
       }
+      
       .ProseMirror figure figcaption {
         pointer-events: none !important;
+        text-align: center !important;
+        font-style: italic !important;
+        margin-top: 12px !important;
+        color: #666 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
+      
       /* While dragging */
       .ProseMirror-selectednode {
         outline: 2px solid #3b82f6 !important;
+      }
+      
+      /* Edit button that appears on hover */
+      .ProseMirror figure::after {
+        content: "✏️" !important;
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        background-color: white !important;
+        border-radius: 4px !important;
+        padding: 4px !important;
+        font-size: 12px !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        opacity: 0 !important;
+        transition: opacity 0.2s ease !important;
+        z-index: 10 !important;
+      }
+      
+      .ProseMirror figure:hover::after {
+        opacity: 1 !important;
+      }
+      
+      /* Make icons in controls darker */
+      .bg-white svg {
+        stroke: #333 !important;
+        stroke-width: 2.5px !important;
       }
     `;
     document.head.appendChild(styleElement);
@@ -922,6 +996,7 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
         HTMLAttributes: {
           class: 'centered-image',
           draggable: 'false', // Set image to not be draggable
+          style: 'max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 0 auto !important; border-radius: 4px !important;',
         },
       }),
       Figure,
@@ -949,17 +1024,53 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
         setTableMenuPosition(prev => ({ ...prev, show: false }));
       }
       
-      // Handle image controls positioning
+      // Handle image controls positioning - place in top right corner
       if (editor.isActive('image') || editor.isActive('figure')) {
         const view = editor.view;
         const { from } = view.state.selection;
-        const start = view.coordsAtPos(from);
         
-        setImageMenuPosition({
-          top: start.top - 50,
-          left: start.left,
-          show: true
-        });
+        // Find the figure node in the DOM
+        let figureNode = null;
+        
+        // Try to locate the figure element around the current selection
+        const $pos = view.state.doc.resolve(from);
+        let depth = $pos.depth;
+        while (depth > 0) {
+          const node = $pos.node(depth);
+          if (node.type.name === 'figure') {
+            // Found a figure, now get its DOM representation
+            try {
+              const domPos = view.coordsAtPos(from);
+              const dom = document.elementFromPoint(domPos.left, domPos.top);
+              if (dom) {
+                figureNode = dom.closest('figure');
+              }
+            } catch (e) {
+              console.log('Could not find figure DOM element', e);
+            }
+            break;
+          }
+          depth--;
+        }
+        
+        if (figureNode) {
+          const rect = figureNode.getBoundingClientRect();
+          const editorRect = editor.view.dom.getBoundingClientRect();
+          
+          setImageMenuPosition({
+            top: rect.top - editorRect.top + 10, // Position at the top
+            left: rect.right - editorRect.left - 120, // Position at the right with offset for menu width
+            show: true
+          });
+        } else {
+          // Fallback to default positioning if figure not found
+          const start = view.coordsAtPos(from);
+          setImageMenuPosition({
+            top: start.top - 50,
+            left: start.left,
+            show: true
+          });
+        }
       } else {
         setImageMenuPosition(prev => ({ ...prev, show: false }));
       }
@@ -1213,7 +1324,7 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
             </svg>
             Edit Image
           </button>
-        </div>
+    </div>
       )}
     </EditorContainer>
   );
