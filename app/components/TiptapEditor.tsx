@@ -7,7 +7,7 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import Image from '@tiptap/extension-image';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 
 interface TiptapEditorProps {
   initialContent?: string;
@@ -298,38 +298,138 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
       if (onChange) {
         onChange(editor.getHTML());
       }
-      checkForTableSelection(editor);
     },
     onSelectionUpdate: ({ editor }) => {
       checkForTableSelection(editor);
+    },
+    onFocus: ({ editor }) => {
+      checkForTableSelection(editor);
+    },
+    onBlur: () => {
+      // Add a small delay to allow for clicking controls
+      setTimeout(() => {
+        setTableMenuPosition(prev => ({ ...prev, show: false }));
+      }, 200);
     },
   });
 
   const checkForTableSelection = useCallback((editor: Editor) => {
     if (!editor) return;
     
-    // Directly check if table is active
+    // Check if table is active
     const isTableActive = editor.isActive('table');
     
     if (isTableActive) {
-      setTableMenuPosition({ top: 0, left: 0, show: true });
+      // Get the DOM representation
+      const dom = editor.view.dom;
+      const editorRect = dom.getBoundingClientRect();
+      
+      // First try: Get position from ProseMirror's selection
+      try {
+        const { from } = editor.state.selection;
+        const pos = editor.view.coordsAtPos(from);
+        
+        if (pos) {
+          setTableMenuPosition({
+            top: pos.top - editorRect.top,
+            left: pos.left - editorRect.left,
+            show: true
+          });
+          return;
+        }
+      } catch (e) {
+        // If coordsAtPos fails, continue to other methods
+        console.log('Could not get position from selection', e);
+      }
+      
+      // Second try: Find the selected cell
+      const selectedCell = dom.querySelector('.selectedCell') as HTMLElement;
+      if (selectedCell) {
+        const cellRect = selectedCell.getBoundingClientRect();
+        
+        setTableMenuPosition({
+          top: cellRect.top - editorRect.top,
+          left: cellRect.left - editorRect.left,
+          show: true
+        });
+        return;
+      }
+      
+      // Third try: Use the table element itself
+      const table = dom.querySelector('table') as HTMLElement;
+      if (table) {
+        const tableRect = table.getBoundingClientRect();
+        
+        setTableMenuPosition({
+          top: tableRect.top - editorRect.top,
+          left: tableRect.left - editorRect.left,
+          show: true
+        });
+        return;
+      }
+      
+      // Last resort: Default position
+      setTableMenuPosition({ top: 10, left: 10, show: true });
     } else {
       setTableMenuPosition(prev => ({ ...prev, show: false }));
     }
   }, []);
 
+  // Set up event listeners to track cursor position
+  useEffect(() => {
+    if (editor) {
+      const handleClick = () => {
+        checkForTableSelection(editor);
+      };
+      
+      const handleMouseUp = () => {
+        if (editor.isActive('table')) {
+          checkForTableSelection(editor);
+        }
+      };
+      
+      // Add event listeners
+      editor.view.dom.addEventListener('click', handleClick);
+      editor.view.dom.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        // Clean up event listeners
+        editor.view.dom.removeEventListener('click', handleClick);
+        editor.view.dom.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [editor, checkForTableSelection]);
+
   // Simple Table Controls component that renders directly in the editor
   const TableControls = () => {
     if (!editor || !tableMenuPosition.show) return null;
     
+    // Position the menu with absolute positioning
+    const style = {
+      position: 'absolute' as const,
+      top: `${tableMenuPosition.top}px`,
+      left: `${tableMenuPosition.left}px`,
+      zIndex: 50,
+      transform: 'translateY(-100%) translateY(-8px)', // Move it up by its own height plus a small offset
+    };
+    
+    // Create handlers that prevent defaults and maintain focus
+    const handleButtonClick = (fn: () => boolean) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      fn();
+      // Return focus to editor
+      setTimeout(() => editor.commands.focus(), 0);
+    };
+    
     return (
-      <div className="bg-white shadow-lg border border-gray-200 rounded mb-2 p-2 flex flex-wrap gap-2">
+      <div style={style} className="shadow-lg border border-gray-200 rounded p-2 bg-white flex nowrap gap-1 whitespace-nowrap">
         <button
-          onClick={() => editor.chain().focus().addColumnBefore().run()}
-          className="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().addColumnBefore().run())(e)}
+          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
           title="Add Column Before"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3v18h18"></path>
             <path d="M15 3v18"></path>
             <path d="M9 9h6"></path>
@@ -337,11 +437,11 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           </svg>
         </button>
         <button
-          onClick={() => editor.chain().focus().addColumnAfter().run()}
-          className="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().addColumnAfter().run())(e)}
+          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
           title="Add Column After"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3v18h18"></path>
             <path d="M9 3v18"></path>
             <path d="M15 9h6"></path>
@@ -349,11 +449,11 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           </svg>
         </button>
         <button
-          onClick={() => editor.chain().focus().addRowBefore().run()}
-          className="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().addRowBefore().run())(e)}
+          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
           title="Add Row Before"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3h18v18"></path>
             <path d="M3 15h18"></path>
             <path d="M9 9h6"></path>
@@ -361,11 +461,11 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           </svg>
         </button>
         <button
-          onClick={() => editor.chain().focus().addRowAfter().run()}
-          className="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().addRowAfter().run())(e)}
+          className="p-1 text-sm bg-gray-100 hover:bg-gray-200 rounded text-gray-700 flex items-center"
           title="Add Row After"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3h18v18"></path>
             <path d="M3 9h18"></path>
             <path d="M9 15h6"></path>
@@ -374,11 +474,11 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
         </button>
         <div className="h-6 border-r border-gray-300 mx-1"></div>
         <button
-          onClick={() => editor.chain().focus().deleteColumn().run()}
-          className="px-2 py-1 text-sm bg-red-50 hover:bg-red-100 rounded text-red-700 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().deleteColumn().run())(e)}
+          className="p-1 text-sm bg-red-50 hover:bg-red-100 rounded text-red-700 flex items-center"
           title="Delete Column"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3v18h18"></path>
             <path d="M9 3v18"></path>
             <path d="M15 9l-6 6"></path>
@@ -386,11 +486,11 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           </svg>
         </button>
         <button
-          onClick={() => editor.chain().focus().deleteRow().run()}
-          className="px-2 py-1 text-sm bg-red-50 hover:bg-red-100 rounded text-red-700 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().deleteRow().run())(e)}
+          className="p-1 text-sm bg-red-50 hover:bg-red-100 rounded text-red-700 flex items-center"
           title="Delete Row"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3h18v18"></path>
             <path d="M3 9h18"></path>
             <path d="M9 15l6-6"></path>
@@ -398,11 +498,11 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           </svg>
         </button>
         <button
-          onClick={() => editor.chain().focus().deleteTable().run()}
-          className="px-2 py-1 text-sm bg-red-100 hover:bg-red-200 rounded text-red-800 flex items-center"
+          onMouseDown={(e) => handleButtonClick(() => editor.chain().deleteTable().run())(e)}
+          className="p-1 text-sm bg-red-100 hover:bg-red-200 rounded text-red-800 flex items-center"
           title="Delete Table"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="3" y1="9" x2="21" y2="9"></line>
             <line x1="3" y1="15" x2="21" y2="15"></line>
@@ -419,11 +519,7 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
     <div className="border border-gray-300 rounded-md overflow-hidden relative">
       <MenuBar editor={editor} />
       <div className="relative">
-        {editor && tableMenuPosition.show && (
-          <div className="absolute top-2 left-2 right-2 z-10">
-            <TableControls />
-          </div>
-        )}
+        {editor && <TableControls />}
         <EditorContent 
           editor={editor} 
           className="prose max-w-none p-3 min-h-[300px] focus:outline-none editor-content" 
@@ -434,6 +530,19 @@ export default function TiptapEditor({ initialContent = '', onChange }: TiptapEd
           min-height: 300px;
           padding: 12px;
           outline: none;
+        }
+        
+        /* Remove top margin from h1 */
+        .editor-content .ProseMirror h1 {
+          margin-top: 0;
+          margin-bottom: 0.5em;
+        }
+        
+        /* Consistent spacing for headings */
+        .editor-content .ProseMirror h2,
+        .editor-content .ProseMirror h3 {
+          margin-top: 1em;
+          margin-bottom: 0.5em;
         }
         
         .editor-content table {
