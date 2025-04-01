@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   MDXEditor,
+  MDXEditorMethods,
   headingsPlugin,
   listsPlugin,
   quotePlugin,
@@ -47,20 +48,20 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
   const [isMounted, setIsMounted] = useState(false);
   const [content, setContent] = useState(initialContent);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const editorRef = useRef<MDXEditorMethods>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   const handleChange = (newContent: string) => {
-    // Process content to ensure code blocks have valid language
-    const processedContent = newContent.replace(/```(N\/A|null|undefined|\s*)/g, '```js');
-    setContent(processedContent);
+    // No longer processing content - using it exactly as provided
+    setContent(newContent);
     setUnsavedChanges(true);
     
     // Still call onChange for tracking changes, but don't trigger save
     if (onChange) {
-      onChange(processedContent);
+      onChange(newContent);
     }
   };
 
@@ -104,6 +105,7 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
 
       <div className="flex-1 min-h-0 relative">
         <MDXEditor
+          ref={editorRef}
           markdown={content}
           onChange={handleChange}
           plugins={[
@@ -120,8 +122,8 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
             imagePlugin(),
             linkDialogPlugin(),
             diffSourcePlugin({
-              viewMode: 'rich-text',
-              diffMarkdown: content
+              viewMode: 'source',
+              diffMarkdown: initialContent
             }),
             directivesPlugin({
               directiveDescriptors: [
@@ -160,7 +162,7 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
               }
             }),
             codeBlockPlugin({
-              defaultCodeBlockLanguage: 'js',
+              defaultCodeBlockLanguage: 'text',
               codeBlockEditorDescriptors: [
                 { 
                   match: () => true,
@@ -186,13 +188,7 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
                   <InsertAdmonition />
                   <DiffSourceToggleWrapper>
                     <></>
-                    {/* <button className="source-toggle">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                        <polyline points="4 17 10 11 4 5"></polyline>
-                        <line x1="12" y1="19" x2="20" y2="19"></line>
-                      </svg>
-                      Source
-                    </button> */}
+
                   </DiffSourceToggleWrapper>
                   <ConditionalContents
                     options={[
@@ -210,10 +206,6 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
           className="h-full relative mdx-editor-container"
           spellCheck={false}
         />
-      </div>
-      
-      <div className="fixed bottom-4 right-4 bg-blue-100 text-blue-800 p-3 rounded shadow text-sm z-10">
-        <p>Use ```javascript to create syntax-highlighted code blocks</p>
       </div>
     </div>
   );
