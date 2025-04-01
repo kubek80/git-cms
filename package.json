@@ -27,6 +27,7 @@
     "@tiptap/react": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "mdx-mermaid": "^2.0.3",
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

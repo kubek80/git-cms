@@ -122,7 +122,7 @@ export default function MarkdownEditor({ initialContent, onChange, onSave }: Mar
             imagePlugin(),
             linkDialogPlugin(),
             diffSourcePlugin({
-              viewMode: 'source',
+              viewMode: 'rich-text',
               diffMarkdown: initialContent
             }),
             directivesPlugin({
