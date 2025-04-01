@@ -6,6 +6,7 @@ import Layout from '@/app/components/Layout';
 import Breadcrumbs from '@/app/components/Breadcrumbs';
 import FileEditor from '@/app/components/FileEditor';
 import PullRequestList from '@/app/components/PullRequestList';
+import { CmsData } from '@/app/components/CmsEditor';
 import { 
   getFileContent, 
 //   createPullRequest, 
@@ -65,13 +66,18 @@ export default function FilePage() {
     fetchData();
   }, [repositoryId, path, tab]);
 
-  const handleSave = async (newContent: string) => {
+  const handleSave = async (newContent: string | CmsData) => {
     try {
+      // Get the content to save
+      const contentToSave = typeof newContent === 'string' 
+        ? newContent 
+        : JSON.stringify(newContent);
+      
       // Get the current file's SHA
       const sha = await getFileSHA(repositoryId, path);
       
       // Update the file with the new content
-      await updateFile(repositoryId, path, newContent, sha);
+      await updateFile(repositoryId, path, contentToSave, sha);
       
       // Show success message
       alert('Changes saved successfully!');

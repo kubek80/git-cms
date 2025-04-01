@@ -39,12 +39,14 @@ import '../styles/editor.css';
 
 interface MarkdownEditorProps {
   initialContent: string;
-  onChange: (content: string) => void;
+  onChange?: (content: string) => void;
+  onSave: (content: string) => void;
 }
 
-export default function MarkdownEditor({ initialContent, onChange }: MarkdownEditorProps) {
+export default function MarkdownEditor({ initialContent, onChange, onSave }: MarkdownEditorProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [content, setContent] = useState(initialContent);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -54,7 +56,17 @@ export default function MarkdownEditor({ initialContent, onChange }: MarkdownEdi
     // Process content to ensure code blocks have valid language
     const processedContent = newContent.replace(/```(N\/A|null|undefined|\s*)/g, '```js');
     setContent(processedContent);
-    onChange(processedContent);
+    setUnsavedChanges(true);
+    
+    // Still call onChange for tracking changes, but don't trigger save
+    if (onChange) {
+      onChange(processedContent);
+    }
+  };
+
+  const handleSave = () => {
+    onSave(content);
+    setUnsavedChanges(false);
   };
 
   if (!isMounted) {
@@ -67,8 +79,27 @@ export default function MarkdownEditor({ initialContent, onChange }: MarkdownEdi
 
   return (
     <div className="editor-container">
-      <div className="px-4 py-2 bg-gray-50 border-b">
-        <h2 className="text-sm font-medium text-gray-700">Markdown Editor</h2>
+      <div className="px-4 py-2 bg-gray-50 border-b flex items-center justify-between">
+        <div className="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-700">
+            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+            <path d="M9 12v-7a2 2 0 0 1 2 -2h7a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-9a2 2 0 0 0 -2 2v3" />
+            <path d="M5 15h4" />
+            <path d="M7 13v4" />
+          </svg>
+          <h2 className="text-sm font-medium text-gray-700">Markdown Editor</h2>
+        </div>
+        <button 
+          onClick={handleSave}
+          disabled={!unsavedChanges}
+          className={`px-3 py-1 rounded text-sm font-medium ${
+            unsavedChanges 
+              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          {unsavedChanges ? 'Save Changes' : 'Saved'}
+        </button>
       </div>
 
       <div className="flex-1 min-h-0 relative">

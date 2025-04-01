@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import CmsEditor from './CmsEditor';
+import MarkdownEditor from './MarkdownEditor';
 import { CmsData } from './CmsEditor';
 import { DEFAULT_CMSJS_TEMPLATE, EMPTY_CMS_DATA } from '../utils/constants';
 
 interface FileEditorProps {
   initialContent?: string;
+  filePath?: string;
   onSave?: (data: CmsData | string, isRawContent?: boolean) => void;
 }
 
-export default function FileEditor({ initialContent = '', onSave }: FileEditorProps) {
+export default function FileEditor({ initialContent = '', filePath = '', onSave }: FileEditorProps) {
+  const isMarkdownFile = filePath.toLowerCase().endsWith('.md');
   // Parse initial content if it's a CMSJS file
   const parseCmsJsContent = (content: string): CmsData => {
     try {
@@ -97,6 +100,7 @@ export default function FileEditor({ initialContent = '', onSave }: FileEditorPr
 
   // Initialize content using the parser
   const [content, setContent] = useState<CmsData>(parseCmsJsContent(initialContent));
+  const [markdownContent, setMarkdownContent] = useState<string>(initialContent);
 
   const handleSave = (data: CmsData | string, isRawContent?: boolean) => {
     if (isRawContent) {
@@ -115,12 +119,31 @@ export default function FileEditor({ initialContent = '', onSave }: FileEditorPr
     }
   };
 
+  const handleMarkdownChange = (newContent: string) => {
+    setMarkdownContent(newContent);
+    // Do not call onSave here - it will be called when the save button is clicked
+  };
+
+  const handleMarkdownSave = (contentToSave: string) => {
+    if (onSave) {
+      onSave(contentToSave, true);
+    }
+  };
+
   return (
     <div className="file-editor">
-      <CmsEditor 
-        initialData={content} 
-        onSave={handleSave} 
-      />
+      {isMarkdownFile ? (
+        <MarkdownEditor 
+          initialContent={markdownContent} 
+          onChange={handleMarkdownChange} 
+          onSave={handleMarkdownSave}
+        />
+      ) : (
+        <CmsEditor 
+          initialData={content} 
+          onSave={handleSave} 
+        />
+      )}
     </div>
   );
 } 
